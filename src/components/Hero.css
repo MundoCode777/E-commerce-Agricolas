@@ -1,0 +1,56 @@
+/* src/components/Hero.css */
+.hero {
+  background: linear-gradient(rgba(45, 80, 22, 0.7), rgba(74, 124, 44, 0.7)),
+              url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%234a7c2c" width="1200" height="600"/><path fill="%2378e08f" d="M0 450 Q300 400 600 450 T1200 450 V600 H0 Z" opacity="0.3"/></svg>');
+  background-size: cover;
+  background-position: center;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  color: white;
+  text-align: center;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-title {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+}
+
+.hero-button {
+  background-color: #78e08f;
+  color: #2d5016;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 30px;
+  box-shadow: 0 4px 15px rgba(120, 224, 143, 0.4);
+}
+
+.hero-button:hover {
+  background-color: #5fb878;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(120, 224, 143, 0.6);
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+}
