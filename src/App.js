@@ -4,12 +4,16 @@ import './App.css';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ProductList from './components/ProductList';
+import About from './components/About';
+import Contact from './components/Contact';
 import Cart from './components/Cart';
+import Checkout from './components/Checkout';
 import Footer from './components/Footer';
 
 function App() {
   const [cartItems, setCartItems] = useState([]);
   const [showCart, setShowCart] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const addToCart = (product) => {
     const existingItem = cartItems.find(item => item.id === product.id);
@@ -39,7 +43,18 @@ function App() {
     }
   };
 
+  const handleProceedToCheckout = () => {
+    setShowCart(false);
+    setShowCheckout(true);
+  };
+
+  const handleConfirmOrder = () => {
+    setCartItems([]);
+    setShowCheckout(false);
+  };
+
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
     <div className="App">
@@ -49,6 +64,8 @@ function App() {
       />
       <Hero />
       <ProductList onAddToCart={addToCart} />
+      <About />
+      <Contact />
       <Footer />
       
       {showCart && (
@@ -57,6 +74,16 @@ function App() {
           onClose={() => setShowCart(false)}
           onUpdateQuantity={updateQuantity}
           onRemove={removeFromCart}
+          onProceedToCheckout={handleProceedToCheckout}
+        />
+      )}
+
+      {showCheckout && (
+        <Checkout
+          items={cartItems}
+          total={totalPrice}
+          onClose={() => setShowCheckout(false)}
+          onConfirmOrder={handleConfirmOrder}
         />
       )}
     </div>

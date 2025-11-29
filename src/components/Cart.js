@@ -2,7 +2,7 @@
 import React from 'react';
 import './Cart.css';
 
-function Cart({ items, onClose, onUpdateQuantity, onRemove }) {
+function Cart({ items, onClose, onUpdateQuantity, onRemove, onProceedToCheckout }) {
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
@@ -66,7 +66,7 @@ function Cart({ items, onClose, onUpdateQuantity, onRemove }) {
               <span>Total:</span>
               <span className="total-amount">${total.toFixed(2)}</span>
             </div>
-            <button className="checkout-button">
+            <button className="checkout-button" onClick={onProceedToCheckout}>
               Proceder al Pago
             </button>
           </div>

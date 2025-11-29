@@ -13,7 +13,7 @@ function Footer() {
 
         <div className="footer-section">
           <h4>Contacto</h4>
-          <p>📞 +593 999 999 999</p>
+          <p>📞 +593 937 837 9332</p>
           <p>📧 info@agricolafresh.com</p>
           <p>📍 Milagro, Guayas, Ecuador</p>
         </div>

@@ -21,6 +21,11 @@
   gap: 10px;
   font-size: 1.5rem;
   font-weight: bold;
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
 }
 
 .logo-icon {
@@ -33,15 +38,41 @@
   gap: 2rem;
 }
 
-.nav-links a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease;
+.nav-links li {
+  list-style: none;
 }
 
-.nav-links a:hover {
+.nav-links button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-links button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-color: #b8e994;
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+}
+
+.nav-links button:hover {
   color: #b8e994;
+  transform: translateY(-2px);
+}
+
+.nav-links button:hover::after {
+  width: 80%;
 }
 
 .cart-button {
@@ -79,7 +110,11 @@
 @media (max-width: 768px) {
   .nav-links {
     gap: 1rem;
+  }
+  
+  .nav-links button {
     font-size: 0.9rem;
+    padding: 0.3rem 0.5rem;
   }
   
   .logo-text {
