@@ -1,5 +1,6 @@
 // src/App.js
 import React, { useState } from 'react';
+import { AuthProvider } from './context/AuthContext';
 import './App.css';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -57,36 +58,38 @@ function App() {
   const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
-    <div className="App">
-      <Navbar 
-        cartCount={totalItems} 
-        onCartClick={() => setShowCart(!showCart)} 
-      />
-      <Hero />
-      <ProductList onAddToCart={addToCart} />
-      <About />
-      <Contact />
-      <Footer />
-      
-      {showCart && (
-        <Cart
-          items={cartItems}
-          onClose={() => setShowCart(false)}
-          onUpdateQuantity={updateQuantity}
-          onRemove={removeFromCart}
-          onProceedToCheckout={handleProceedToCheckout}
+    <AuthProvider>
+      <div className="App">
+        <Navbar 
+          cartCount={totalItems} 
+          onCartClick={() => setShowCart(!showCart)} 
         />
-      )}
+        <Hero />
+        <ProductList onAddToCart={addToCart} />
+        <About />
+        <Contact />
+        <Footer />
+        
+        {showCart && (
+          <Cart
+            items={cartItems}
+            onClose={() => setShowCart(false)}
+            onUpdateQuantity={updateQuantity}
+            onRemove={removeFromCart}
+            onProceedToCheckout={handleProceedToCheckout}
+          />
+        )}
 
-      {showCheckout && (
-        <Checkout
-          items={cartItems}
-          total={totalPrice}
-          onClose={() => setShowCheckout(false)}
-          onConfirmOrder={handleConfirmOrder}
-        />
-      )}
-    </div>
+        {showCheckout && (
+          <Checkout
+            items={cartItems}
+            total={totalPrice}
+            onClose={() => setShowCheckout(false)}
+            onConfirmOrder={handleConfirmOrder}
+          />
+        )}
+      </div>
+    </AuthProvider>
   );
 }
 

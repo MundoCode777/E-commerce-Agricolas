@@ -1,23 +1,29 @@
 // src/components/Checkout.js
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { orderService } from '../services/api';
 import './Checkout.css';
 
 function Checkout({ items, total, onClose, onConfirmOrder }) {
+  const { user, isAuthenticated } = useAuth();
+  const [orderNumber, setOrderNumber] = useState('');
+  
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    email: '',
-    telefono: '',
-    direccion: '',
-    ciudad: 'Milagro',
-    provincia: 'Guayas',
-    codigoPostal: '',
+    nombre: user?.nombre || '',
+    apellido: user?.apellido || '',
+    email: user?.email || '',
+    telefono: user?.telefono || '',
+    direccion: user?.direccion?.calle || '',
+    ciudad: user?.direccion?.ciudad || 'Milagro',
+    provincia: user?.direccion?.provincia || 'Guayas',
+    codigoPostal: user?.direccion?.codigoPostal || '',
     notasEntrega: '',
     metodoPago: 'efectivo'
   });
 
   const [errors, setErrors] = useState({});
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,16 +61,71 @@ function Checkout({ items, total, onClose, onConfirmOrder }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      setShowConfirmation(true);
+    if (!validateForm()) {
+      return;
+    }
+
+    // Verificar si el usuario está autenticado
+    if (!isAuthenticated) {
+      alert('Debes iniciar sesión para completar la compra');
+      onClose();
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Preparar datos de la orden
+      const orderData = {
+        items: items.map(item => ({
+          productoId: item.id,
+          nombre: item.name,
+          precio: item.price,
+          cantidad: item.quantity,
+          image: item.image
+        })),
+        subtotal: subtotal,
+        costoEnvio: deliveryCost,
+        total: finalTotal,
+        direccionEntrega: {
+          nombre: formData.nombre,
+          apellido: formData.apellido,
+          direccion: formData.direccion,
+          ciudad: formData.ciudad,
+          provincia: formData.provincia,
+          telefono: formData.telefono
+        },
+        metodoPago: formData.metodoPago
+      };
+
+      // Crear la orden en la base de datos
+      const response = await orderService.createOrder(orderData);
+      
+      if (response.success) {
+        setOrderNumber(response.orden.numeroOrden);
+        setShowConfirmation(true);
+      } else {
+        alert('Error al procesar la orden. Por favor intenta de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error al crear orden:', error);
+      if (error.response?.status === 401) {
+        alert('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+        onClose();
+      } else {
+        alert('Error al procesar la orden. Por favor intenta de nuevo.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrderComplete = () => {
     onConfirmOrder(formData);
+    onClose();
   };
 
   const deliveryCost = 2.50;
@@ -85,15 +146,26 @@ function Checkout({ items, total, onClose, onConfirmOrder }) {
             <div className="order-summary-box">
               <h3>Resumen del Pedido</h3>
               <div className="order-details">
-                <p><strong>Número de Orden:</strong> #ORD-{Date.now().toString().slice(-6)}</p>
+                <p><strong>Número de Orden:</strong> #{orderNumber}</p>
                 <p><strong>Total:</strong> ${finalTotal.toFixed(2)}</p>
-                <p><strong>Método de Pago:</strong> {formData.metodoPago === 'efectivo' ? 'Efectivo' : formData.metodoPago === 'transferencia' ? 'Transferencia' : 'Tarjeta'}</p>
+                <p><strong>Método de Pago:</strong> {
+                  formData.metodoPago === 'efectivo' ? 'Efectivo' : 
+                  formData.metodoPago === 'transferencia' ? 'Transferencia Bancaria' : 
+                  'Tarjeta de Crédito/Débito'
+                }</p>
                 <p><strong>Dirección de Entrega:</strong> {formData.direccion}, {formData.ciudad}</p>
+                <p><strong>Teléfono de Contacto:</strong> {formData.telefono}</p>
               </div>
             </div>
 
+            <div className="order-tracking-info">
+              <p>📧 Recibirás un email de confirmación a: <strong>{formData.email}</strong></p>
+              <p>🚚 Entrega estimada: 1-2 días hábiles</p>
+              <p>📱 Te contactaremos al: <strong>{formData.telefono}</strong></p>
+            </div>
+
             <div className="confirmation-actions">
-              <button className="btn-primary" onClick={handleConfirmOrder}>
+              <button className="btn-primary" onClick={handleConfirmOrderComplete}>
                 Continuar Comprando
               </button>
             </div>
@@ -287,8 +359,18 @@ function Checkout({ items, total, onClose, onConfirmOrder }) {
                 </div>
               </div>
 
-              <button type="submit" className="submit-order-btn">
-                Confirmar Pedido - ${finalTotal.toFixed(2)}
+              {!isAuthenticated && (
+                <div className="auth-warning">
+                  ⚠️ Debes iniciar sesión para completar la compra
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                className="submit-order-btn"
+                disabled={loading || !isAuthenticated}
+              >
+                {loading ? 'Procesando...' : `Confirmar Pedido - $${finalTotal.toFixed(2)}`}
               </button>
             </form>
           </div>
@@ -329,6 +411,7 @@ function Checkout({ items, total, onClose, onConfirmOrder }) {
               <div className="delivery-info">
                 <p>🚚 Entrega estimada: 1-2 días hábiles</p>
                 <p>✅ Productos 100% frescos garantizados</p>
+                <p>📦 Seguimiento de pedido en tiempo real</p>
               </div>
             </div>
           </div>
