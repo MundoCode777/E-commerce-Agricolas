@@ -25,39 +25,64 @@ api.interceptors.request.use(
   }
 );
 
+// Interceptor para manejar errores de respuesta
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Error en API:', error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
+
 // Servicios de Autenticación
 export const authService = {
   // Registrar usuario
   register: async (userData) => {
-    const response = await api.post('/auth/register', userData);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.usuario));
+    try {
+      const response = await api.post('/auth/register', userData);
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.usuario));
+      }
+      return response.data;
+    } catch (error) {
+      throw error;
     }
-    return response.data;
   },
 
   // Login
   login: async (credentials) => {
-    const response = await api.post('/auth/login', credentials);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.usuario));
+    try {
+      const response = await api.post('/auth/login', credentials);
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.usuario));
+      }
+      return response.data;
+    } catch (error) {
+      throw error;
     }
-    return response.data;
   },
 
   // Obtener usuario actual
   getCurrentUser: async () => {
-    const response = await api.get('/auth/me');
-    return response.data;
+    try {
+      const response = await api.get('/auth/me');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   // Actualizar perfil
   updateProfile: async (userData) => {
-    const response = await api.put('/auth/perfil', userData);
-    localStorage.setItem('user', JSON.stringify(response.data.usuario));
-    return response.data;
+    try {
+      const response = await api.put('/auth/perfil', userData);
+      localStorage.setItem('user', JSON.stringify(response.data.usuario));
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   // Logout
@@ -71,32 +96,52 @@ export const authService = {
 export const orderService = {
   // Crear orden
   createOrder: async (orderData) => {
-    const response = await api.post('/orders', orderData);
-    return response.data;
+    try {
+      const response = await api.post('/orders', orderData);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   // Obtener mis órdenes
   getMyOrders: async () => {
-    const response = await api.get('/orders/mis-ordenes');
-    return response.data;
+    try {
+      const response = await api.get('/orders/mis-ordenes');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   // Obtener orden por ID
   getOrderById: async (orderId) => {
-    const response = await api.get(`/orders/${orderId}`);
-    return response.data;
+    try {
+      const response = await api.get(`/orders/${orderId}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   // Obtener todas las órdenes (admin)
   getAllOrders: async () => {
-    const response = await api.get('/orders');
-    return response.data;
+    try {
+      const response = await api.get('/orders');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   // Actualizar estado de orden (admin)
   updateOrderStatus: async (orderId, estado) => {
-    const response = await api.put(`/orders/${orderId}/estado`, { estado });
-    return response.data;
+    try {
+      const response = await api.put(`/orders/${orderId}/estado`, { estado });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 };
 

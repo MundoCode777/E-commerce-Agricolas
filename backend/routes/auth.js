@@ -17,28 +17,65 @@ const generarToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
+    console.log('📝 Datos recibidos para registro:', req.body);
+    
     const { nombre, apellido, email, password, telefono } = req.body;
 
+    // Validar campos requeridos
+    if (!nombre || !apellido || !email || !password) {
+      console.log('❌ Faltan campos requeridos');
+      return res.status(400).json({
+        success: false,
+        message: 'Por favor completa todos los campos requeridos'
+      });
+    }
+
+    // Validar formato de email
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'El formato del email no es válido'
+      });
+    }
+
+    // Validar longitud de contraseña
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña debe tener al menos 6 caracteres'
+      });
+    }
+
+    console.log('🔍 Verificando si el email ya existe...');
+
     // Verificar si el usuario ya existe
-    const usuarioExiste = await User.findOne({ email });
+    const usuarioExiste = await User.findOne({ email: email.toLowerCase() });
     if (usuarioExiste) {
+      console.log('❌ El email ya está registrado');
       return res.status(400).json({
         success: false,
         message: 'El email ya está registrado'
       });
     }
 
+    console.log('✅ Email disponible, creando usuario...');
+
     // Crear usuario
     const usuario = await User.create({
-      nombre,
-      apellido,
-      email,
-      password,
-      telefono
+      nombre: nombre.trim(),
+      apellido: apellido.trim(),
+      email: email.toLowerCase().trim(),
+      password: password,
+      telefono: telefono ? telefono.trim() : ''
     });
+
+    console.log('✅ Usuario creado exitosamente:', usuario._id);
 
     // Generar token
     const token = generarToken(usuario._id);
+
+    console.log('✅ Token generado');
 
     res.status(201).json({
       success: true,
@@ -54,7 +91,27 @@ router.post('/register', async (req, res) => {
         avatar: usuario.avatar
       }
     });
+
   } catch (error) {
+    console.error('❌ Error al registrar usuario:', error);
+    
+    // Error de validación de Mongoose
+    if (error.name === 'ValidationError') {
+      const mensajes = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: mensajes[0]
+      });
+    }
+
+    // Error de duplicado (email ya existe)
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'El email ya está registrado'
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'Error al registrar usuario',
@@ -68,6 +125,8 @@ router.post('/register', async (req, res) => {
 // @access  Public
 router.post('/login', async (req, res) => {
   try {
+    console.log('🔑 Intento de login:', req.body.email);
+    
     const { email, password } = req.body;
 
     // Validar campos
@@ -79,8 +138,9 @@ router.post('/login', async (req, res) => {
     }
 
     // Buscar usuario
-    const usuario = await User.findOne({ email });
+    const usuario = await User.findOne({ email: email.toLowerCase() });
     if (!usuario) {
+      console.log('❌ Usuario no encontrado');
       return res.status(401).json({
         success: false,
         message: 'Credenciales inválidas'
@@ -90,11 +150,14 @@ router.post('/login', async (req, res) => {
     // Verificar contraseña
     const passwordValido = await usuario.compararPassword(password);
     if (!passwordValido) {
+      console.log('❌ Contraseña incorrecta');
       return res.status(401).json({
         success: false,
         message: 'Credenciales inválidas'
       });
     }
+
+    console.log('✅ Login exitoso para:', usuario.email);
 
     // Generar token
     const token = generarToken(usuario._id);
@@ -115,6 +178,7 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('❌ Error al iniciar sesión:', error);
     res.status(500).json({
       success: false,
       message: 'Error al iniciar sesión',
@@ -169,9 +233,9 @@ router.put('/perfil', protect, async (req, res) => {
     }
 
     // Actualizar campos
-    usuario.nombre = nombre || usuario.nombre;
-    usuario.apellido = apellido || usuario.apellido;
-    usuario.telefono = telefono || usuario.telefono;
+    if (nombre) usuario.nombre = nombre;
+    if (apellido) usuario.apellido = apellido;
+    if (telefono) usuario.telefono = telefono;
     if (direccion) {
       usuario.direccion = { ...usuario.direccion, ...direccion };
     }

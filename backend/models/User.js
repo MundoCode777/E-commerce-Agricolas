@@ -28,13 +28,14 @@ const userSchema = new mongoose.Schema({
   },
   telefono: {
     type: String,
-    trim: true
+    trim: true,
+    default: ''
   },
   direccion: {
-    calle: String,
+    calle: { type: String, default: '' },
     ciudad: { type: String, default: 'Milagro' },
     provincia: { type: String, default: 'Guayas' },
-    codigoPostal: String
+    codigoPostal: { type: String, default: '' }
   },
   rol: {
     type: String,
@@ -57,20 +58,15 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Encriptar contraseña antes de guardar
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
-  
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
 // Método para comparar contraseñas
 userSchema.methods.compararPassword = async function(passwordIngresado) {
   return await bcrypt.compare(passwordIngresado, this.password);
+};
+
+// Método estático para encriptar contraseña
+userSchema.statics.encriptarPassword = async function(password) {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
 };
 
 module.exports = mongoose.model('User', userSchema);
