@@ -5,6 +5,7 @@
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .product-card:hover {
@@ -23,6 +24,11 @@
 
 .product-emoji {
   font-size: 5rem;
+  transition: all 0.3s ease;
+}
+
+.product-card:hover .product-emoji {
+  transform: scale(1.1);
 }
 
 .product-badge {
@@ -37,6 +43,10 @@
   font-weight: bold;
 }
 
+.product-badge.out-of-stock {
+  background-color: #dc3545;
+}
+
 .product-info {
   padding: 1.5rem;
 }
@@ -45,6 +55,34 @@
   font-size: 1.3rem;
   color: #2d5016;
   margin-bottom: 0.5rem;
+}
+
+/* Rating */
+.product-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stars-container {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.star-small {
+  color: #ddd;
+  font-size: 0.9rem;
+}
+
+.star-small.filled {
+  color: #ffc107;
+}
+
+.rating-text {
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .product-description {
@@ -57,6 +95,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
 .product-price {
@@ -76,22 +115,54 @@
   color: #666;
 }
 
+.product-actions-card {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.view-details-btn {
+  background-color: #78e08f;
+  color: #2d5016;
+  padding: 0.6rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-details-btn:hover {
+  background-color: #5fb878;
+  transform: translateY(-2px);
+}
+
 .add-button {
   background-color: #4a7c2c;
   color: white;
-  padding: 0.6rem 1.2rem;
-  border-radius: 25px;
+  padding: 0.6rem 1rem;
+  border-radius: 20px;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  min-width: 45px;
+  transition: all 0.3s ease;
 }
 
 .add-button:hover {
   background-color: #2d5016;
+  transform: translateY(-2px);
 }
 
 .add-button.added {
-  background-color: #78e08f;
-  color: #2d5016;
+  background-color: #28a745;
+  animation: pulse 0.5s ease;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
 @media (max-width: 768px) {
@@ -101,5 +172,20 @@
   
   .product-emoji {
     font-size: 4rem;
+  }
+
+  .product-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .product-actions-card {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .view-details-btn,
+  .add-button {
+    flex: 1;
   }
 }

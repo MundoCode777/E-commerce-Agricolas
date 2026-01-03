@@ -36,7 +36,7 @@ function Footer() {
       </div>
 
       <div className="footer-bottom">
-        <p>&copy; 2024 Agrícola Fresh. Todos los derechos reservados.</p>
+        <p>&copy; 2025 Agrícola Fresh. Todos los derechos reservados.</p>
       </div>
     </footer>
   );

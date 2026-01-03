@@ -30,16 +30,30 @@ app.use((req, res, next) => {
 // Rutas
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/orders', require('./routes/orders'));
+app.use('/api/products', require('./routes/products'));
 
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({ 
     message: '🌾 API Agrícola Fresh funcionando correctamente',
     endpoints: {
-      register: 'POST /api/auth/register',
-      login: 'POST /api/auth/login',
-      me: 'GET /api/auth/me',
-      updateProfile: 'PUT /api/auth/perfil'
+      auth: {
+        register: 'POST /api/auth/register',
+        login: 'POST /api/auth/login',
+        me: 'GET /api/auth/me',
+        updateProfile: 'PUT /api/auth/perfil'
+      },
+      products: {
+        getAll: 'GET /api/products',
+        getOne: 'GET /api/products/:id',
+        addReview: 'POST /api/products/:id/reviews',
+        deleteReview: 'DELETE /api/products/:id/reviews/:reviewId'
+      },
+      orders: {
+        create: 'POST /api/orders',
+        getMyOrders: 'GET /api/orders/mis-ordenes',
+        getOne: 'GET /api/orders/:id'
+      }
     }
   });
 });

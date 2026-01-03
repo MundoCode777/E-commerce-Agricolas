@@ -1,95 +1,102 @@
 // src/components/ProductList.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
+import ProductDetail from './ProductDetail';
+import { productService } from '../services/productService';
 import './ProductList.css';
 
 function ProductList({ onAddToCart }) {
-  const products = [
-    {
-      id: 1,
-      name: 'Tomates Orgánicos',
-      price: 3.50,
-      image: '🍅',
-      description: 'Tomates frescos y jugosos',
-      unit: 'kg'
-    },
-    {
-      id: 2,
-      name: 'Lechugas Verdes',
-      price: 2.00,
-      image: '🥬',
-      description: 'Lechugas crocantes y frescas',
-      unit: 'unidad'
-    },
-    {
-      id: 3,
-      name: 'Zanahorias',
-      price: 2.80,
-      image: '🥕',
-      description: 'Zanahorias dulces y nutritivas',
-      unit: 'kg'
-    },
-    {
-      id: 4,
-      name: 'Papas',
-      price: 1.50,
-      image: '🥔',
-      description: 'Papas de primera calidad',
-      unit: 'kg'
-    },
-    {
-      id: 5,
-      name: 'Brócoli',
-      price: 3.20,
-      image: '🥦',
-      description: 'Brócoli fresco y saludable',
-      unit: 'kg'
-    },
-    {
-      id: 6,
-      name: 'Pimientos',
-      price: 4.00,
-      image: '🫑',
-      description: 'Pimientos rojos y verdes',
-      unit: 'kg'
-    },
-    {
-      id: 7,
-      name: 'Cebollas',
-      price: 1.80,
-      image: '🧅',
-      description: 'Cebollas blancas y moradas',
-      unit: 'kg'
-    },
-    {
-      id: 8,
-      name: 'Maíz',
-      price: 2.50,
-      image: '🌽',
-      description: 'Maíz tierno y dulce',
-      unit: 'kg'
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showDetail, setShowDetail] = useState(false);
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await productService.getAllProducts();
+      setProducts(response.products);
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
     }
-  ];
+    setLoading(false);
+  };
+
+  const handleProductClick = (productId) => {
+    setSelectedProduct(productId);
+    setShowDetail(true);
+  };
+
+  const handleCloseDetail = () => {
+    setShowDetail(false);
+    setSelectedProduct(null);
+  };
+
+  if (loading) {
+    return (
+      <section className="products-section" id="productos">
+        <div className="container">
+          <h2 className="section-title">Nuestros Productos Frescos</h2>
+          <div className="loading-products">
+            <div className="spinner-large"></div>
+            <p>Cargando productos...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="products-section" id="productos">
-      <div className="container">
-        <h2 className="section-title">Nuestros Productos Frescos</h2>
-        <p className="section-subtitle">
-          Productos 100% orgánicos cosechados del día
-        </p>
-        
-        <div className="products-grid">
-          {products.map(product => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={onAddToCart}
-            />
-          ))}
+    <>
+      <section className="products-section" id="productos">
+        <div className="container">
+          <h2 className="section-title">Nuestros Productos Frescos</h2>
+          <p className="section-subtitle">
+            Productos 100% orgánicos cosechados del día
+          </p>
+          
+          {products.length === 0 ? (
+            <div className="no-products">
+              <span className="no-products-icon">📦</span>
+              <p>No hay productos disponibles en este momento</p>
+            </div>
+          ) : (
+            <div className="products-grid">
+              {products.map(product => (
+                <ProductCard
+                  key={product._id}
+                  product={{
+                    id: product._id,
+                    name: product.nombre,
+                    price: product.precio,
+                    image: product.image,
+                    description: product.descripcion,
+                    unit: product.unit,
+                    calificacionPromedio: product.calificacionPromedio,
+                    numeroReviews: product.numeroReviews,
+                    disponible: product.disponible
+                  }}
+                  onAddToCart={onAddToCart}
+                  onViewDetails={handleProductClick}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      </div>
-    </section>
+      </section>
+
+      {showDetail && selectedProduct && (
+        <ProductDetail
+          productId={selectedProduct}
+          onClose={handleCloseDetail}
+          onAddToCart={onAddToCart}
+        />
+      )}
+    </>
   );
 }
 
