@@ -1,4 +1,4 @@
-// src/components/ProductDetail.js - SIN INFORMACIÓN NUTRICIONAL
+// src/components/ProductDetail.js - CÓDIGO COMPLETO SIN MINIATURAS
 import React, { useState, useEffect } from 'react';
 import { productService } from '../services/productService';
 import './ProductDetail.css';
@@ -16,10 +16,17 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
   const isAuthenticated = !!localStorage.getItem('token');
 
   useEffect(() => {
-    loadProduct();
+    if (productId) {
+      setProduct(null);
+      setQuantity(1);
+      setActiveTab('descripcion');
+      setMessage({ type: '', text: '' });
+      loadProduct();
+    }
   }, [productId]);
 
   const loadProduct = async () => {
+    setLoading(true);
     try {
       const response = await productService.getProductById(productId);
       setProduct(response.product);
@@ -94,7 +101,7 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
     return (
       <div className="product-detail-overlay">
         <div className="product-detail-modal">
-          <div className="loading-spinner">Cargando...</div>
+          <div className="loading-spinner">⏳ Cargando producto...</div>
         </div>
       </div>
     );
@@ -114,7 +121,7 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
         )}
 
         <div className="product-detail-content">
-          {/* Columna Izquierda - Imagen */}
+          {/* Columna Izquierda - Solo imagen principal */}
           <div className="product-detail-left">
             <div className="product-main-image">
               {product.image && product.image.startsWith('/uploads') ? (
@@ -122,6 +129,7 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
                   src={`http://localhost:5000${product.image}`} 
                   alt={product.nombre}
                   className="product-main-img"
+                  key={`${product._id}-${product.image}`}
                 />
               ) : (
                 <span className="product-large-emoji">{product.image}</span>
@@ -129,21 +137,6 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
               {!product.disponible && (
                 <div className="out-of-stock-badge">Agotado</div>
               )}
-            </div>
-
-            <div className="product-thumbnails">
-              {product.imagenes?.map((img, index) => (
-                <div key={index} className="thumbnail">
-                  {img && img.startsWith('/uploads') ? (
-                    <img 
-                      src={`http://localhost:5000${img}`} 
-                      alt={`${product.nombre} ${index + 1}`}
-                    />
-                  ) : (
-                    <span>{img}</span>
-                  )}
-                </div>
-              ))}
             </div>
           </div>
 
@@ -189,13 +182,27 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
                 <div className="quantity-selector">
                   <label>Cantidad:</label>
                   <div className="quantity-controls-detail">
-                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
+                    <button 
+                      type="button"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    >
+                      -
+                    </button>
                     <span>{quantity}</span>
-                    <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}>+</button>
+                    <button 
+                      type="button"
+                      onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
 
-                <button className="add-to-cart-detail" onClick={handleAddToCart}>
+                <button 
+                  className="add-to-cart-detail" 
+                  onClick={handleAddToCart}
+                  type="button"
+                >
                   🛒 Agregar al Carrito
                 </button>
               </div>
@@ -218,12 +225,14 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
         <div className="product-tabs">
           <div className="tabs-header">
             <button
+              type="button"
               className={activeTab === 'descripcion' ? 'tab-active' : ''}
               onClick={() => setActiveTab('descripcion')}
             >
               📝 Descripción
             </button>
             <button
+              type="button"
               className={activeTab === 'reviews' ? 'tab-active' : ''}
               onClick={() => setActiveTab('reviews')}
             >
@@ -283,10 +292,15 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
                         </div>
                         <p className="review-comment">{review.comentario}</p>
                         <span className="review-date">
-                          {new Date(review.fecha).toLocaleDateString()}
+                          {new Date(review.fecha).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
                         </span>
                         {isAuthenticated && review.usuario === user.id && (
                           <button 
+                            type="button"
                             className="delete-review-btn"
                             onClick={() => handleDeleteReview(review._id)}
                           >
@@ -296,7 +310,9 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
                       </div>
                     ))
                   ) : (
-                    <p className="no-reviews">No hay reseñas todavía. ¡Sé el primero en dejar una!</p>
+                    <p className="no-reviews">
+                      No hay reseñas todavía. ¡Sé el primero en dejar una!
+                    </p>
                   )}
                 </div>
               </div>

@@ -1,4 +1,4 @@
-// src/pages/AdminDashboard.js - CÓDIGO COMPLETO
+// src/pages/AdminDashboard.js - CÓDIGO COMPLETO CON FIX DE IMÁGENES
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import './AdminDashboard.css';
@@ -74,17 +74,28 @@ function AdminDashboard() {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Validar tamaño
     if (file.size > 5 * 1024 * 1024) {
       mostrarNotificacion('La imagen no debe superar 5MB', 'error');
+      e.target.value = '';
       return;
     }
 
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+      mostrarNotificacion('Solo se permiten archivos de imagen', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    // Preview local
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result);
     };
     reader.readAsDataURL(file);
 
+    // Subir a servidor
     setUploadingImage(true);
     const formDataImage = new FormData();
     formDataImage.append('image', file);
@@ -101,14 +112,26 @@ function AdminDashboard() {
         image: response.data.imageUrl
       }));
 
-      mostrarNotificacion('Imagen subida exitosamente', 'success');
+      mostrarNotificacion('✅ Imagen subida exitosamente', 'success');
     } catch (error) {
       console.error('Error al subir imagen:', error);
-      mostrarNotificacion('Error al subir imagen', 'error');
+      mostrarNotificacion('❌ Error al subir imagen', 'error');
       setImagePreview('');
+      e.target.value = '';
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview('');
+    setFormData(prev => ({
+      ...prev,
+      image: ''
+    }));
+    // Limpiar el input file
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) fileInput.value = '';
   };
 
   const abrirModalNuevo = () => {
@@ -126,11 +149,16 @@ function AdminDashboard() {
       beneficios: ['', '', '', '']
     });
     setShowModal(true);
+    // Limpiar input file
+    setTimeout(() => {
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = '';
+    }, 0);
   };
 
   const abrirModalEditar = (producto) => {
     setEditingProduct(producto);
-    setImagePreview('');
+    setImagePreview(''); // Limpiar preview anterior
     setFormData({
       nombre: producto.nombre,
       descripcion: producto.descripcion,
@@ -143,6 +171,12 @@ function AdminDashboard() {
       beneficios: producto.beneficios || ['', '', '', '']
     });
     setShowModal(true);
+    
+    // Limpiar el input file
+    setTimeout(() => {
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = '';
+    }, 0);
   };
 
   const handleSubmit = async (e) => {
@@ -163,10 +197,10 @@ function AdminDashboard() {
 
       if (editingProduct) {
         await api.put(`/products/${editingProduct._id}`, productData);
-        mostrarNotificacion('Producto actualizado exitosamente', 'success');
+        mostrarNotificacion('✅ Producto actualizado exitosamente', 'success');
       } else {
         await api.post('/products', productData);
-        mostrarNotificacion('Producto creado exitosamente', 'success');
+        mostrarNotificacion('✅ Producto creado exitosamente', 'success');
       }
 
       setShowModal(false);
@@ -174,7 +208,7 @@ function AdminDashboard() {
       cargarDatos();
     } catch (error) {
       console.error('Error al guardar producto:', error);
-      mostrarNotificacion(error.response?.data?.message || 'Error al guardar producto', 'error');
+      mostrarNotificacion(error.response?.data?.message || '❌ Error al guardar producto', 'error');
     }
   };
 
@@ -182,11 +216,11 @@ function AdminDashboard() {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
       try {
         await api.delete(`/products/${id}`);
-        mostrarNotificacion('Producto eliminado exitosamente', 'success');
+        mostrarNotificacion('✅ Producto eliminado exitosamente', 'success');
         cargarDatos();
       } catch (error) {
         console.error('Error al eliminar:', error);
-        mostrarNotificacion('Error al eliminar producto', 'error');
+        mostrarNotificacion('❌ Error al eliminar producto', 'error');
       }
     }
   };
@@ -194,12 +228,23 @@ function AdminDashboard() {
   const actualizarEstadoOrden = async (ordenId, nuevoEstado) => {
     try {
       await api.put(`/orders/${ordenId}/estado`, { estado: nuevoEstado });
-      mostrarNotificacion('Estado actualizado exitosamente', 'success');
+      mostrarNotificacion('✅ Estado actualizado exitosamente', 'success');
       cargarDatos();
     } catch (error) {
       console.error('Error al actualizar estado:', error);
-      mostrarNotificacion('Error al actualizar estado', 'error');
+      mostrarNotificacion('❌ Error al actualizar estado', 'error');
     }
+  };
+
+  const cerrarModal = () => {
+    setShowModal(false);
+    setImagePreview('');
+    setEditingProduct(null);
+    // Limpiar input file
+    setTimeout(() => {
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = '';
+    }, 0);
   };
 
   return (
@@ -245,7 +290,7 @@ function AdminDashboard() {
                 {productos.map(producto => (
                   <div key={producto._id} className="producto-card-admin">
                     <div className="producto-image">
-                      {producto.image.startsWith('/uploads') ? (
+                      {producto.image && producto.image.startsWith('/uploads') ? (
                         <img src={`http://localhost:5000${producto.image}`} alt={producto.nombre} />
                       ) : (
                         <span style={{fontSize: '4rem'}}>{producto.image}</span>
@@ -335,32 +380,51 @@ function AdminDashboard() {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={cerrarModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editingProduct ? '✏️ Editar Producto' : '➕ Nuevo Producto'}</h2>
-              <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
+              <button className="modal-close" onClick={cerrarModal}>✕</button>
             </div>
 
             <form onSubmit={handleSubmit} className="producto-form">
               <div className="form-group full-width">
                 <label>Imagen del Producto *</label>
                 <div className="image-upload-container">
-                  {(imagePreview || formData.image) && (
-                    <div className="image-preview">
-                      <img 
-                        src={imagePreview || `http://localhost:5000${formData.image}`} 
-                        alt="Preview" 
-                      />
+                  {(imagePreview || (formData.image && !imagePreview)) && (
+                    <div className="image-preview-wrapper">
+                      <div className="image-preview">
+                        <img 
+                          src={imagePreview || `http://localhost:5000${formData.image}`} 
+                          alt="Preview" 
+                        />
+                      </div>
+                      <button 
+                        type="button" 
+                        className="btn-remove-image"
+                        onClick={handleRemoveImage}
+                      >
+                        ✕ {imagePreview ? 'Eliminar nueva imagen' : 'Cambiar imagen'}
+                      </button>
                     </div>
                   )}
+                  
+                  {!imagePreview && !formData.image && (
+                    <div className="upload-placeholder">
+                      <span className="upload-icon">📷</span>
+                      <p>Arrastra una imagen aquí o haz click para seleccionar</p>
+                    </div>
+                  )}
+
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageUpload}
                     disabled={uploadingImage}
                     className="file-input"
+                    id="file-upload"
                   />
+                  
                   {uploadingImage && <p className="uploading-text">⏳ Subiendo imagen...</p>}
                   <small>Formatos: JPG, PNG, GIF, WEBP (Máx. 5MB)</small>
                 </div>
@@ -475,7 +539,7 @@ function AdminDashboard() {
               </div>
 
               <div className="form-actions">
-                <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>
+                <button type="button" className="btn-cancel" onClick={cerrarModal}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-submit" disabled={uploadingImage || !formData.image}>

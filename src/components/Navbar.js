@@ -1,4 +1,3 @@
-// src/components/Navbar.js
 import React, { useState } from 'react';
 import './Navbar.css';
 
@@ -23,15 +22,11 @@ function Navbar({
       onNavigate('home');
       setTimeout(() => {
         const element = document.getElementById(sectionId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     } else {
       const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+      if (element) element.scrollIntoView({ behavior: 'smooth' });
     }
     setMobileMenuOpen(false);
   };
@@ -39,59 +34,53 @@ function Navbar({
   return (
     <nav className="navbar">
       <div className="container navbar-content">
+
+        {/* LOGO */}
         <div className="navbar-brand" onClick={() => handleNavigation('home')}>
           <span className="brand-icon">🌾</span>
           <span className="brand-text">Agrícola Fresh</span>
         </div>
 
-        {/* Botón menú móvil */}
-        <button 
+        {/* BOTÓN MÓVIL */}
+        <button
           className="mobile-menu-btn"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? '✕' : '☰'}
         </button>
 
-        {/* Menú de navegación */}
+        {/* MENÚ */}
         <ul className={`navbar-menu ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+
           <li>
-            <button 
-              className={currentView === 'home' ? 'nav-btn active' : 'nav-btn'}
+            <button
+              className={`nav-btn ${currentView === 'home' ? 'active' : ''}`}
               onClick={() => handleNavigation('home')}
             >
               🏠 Inicio
             </button>
           </li>
-          
+
           <li>
-            <button 
-              className="nav-btn"
-              onClick={() => scrollToSection('productos')}
-            >
+            <button className="nav-btn" onClick={() => scrollToSection('productos')}>
               🛍️ Productos
             </button>
           </li>
 
           <li>
-            <button 
-              className="nav-btn"
-              onClick={() => scrollToSection('nosotros')}
-            >
+            <button className="nav-btn" onClick={() => scrollToSection('nosotros')}>
               ℹ️ Nosotros
             </button>
           </li>
 
           <li>
-            <button 
-              className="nav-btn"
-              onClick={() => scrollToSection('contacto')}
-            >
+            <button className="nav-btn" onClick={() => scrollToSection('contacto')}>
               📞 Contacto
             </button>
           </li>
-          
+
           <li>
-            <button 
+            <button
               className={`nav-btn cart-btn ${currentView === 'cart' ? 'active' : ''}`}
               onClick={() => handleNavigation('cart')}
             >
@@ -103,7 +92,7 @@ function Navbar({
           {isAuthenticated ? (
             <>
               <li>
-                <button 
+                <button
                   className={`nav-btn ${currentView === 'profile' ? 'active' : ''}`}
                   onClick={() => handleNavigation('profile')}
                 >
@@ -113,8 +102,8 @@ function Navbar({
 
               {user?.rol === 'administrador' && (
                 <li>
-                  <button 
-                    className={`nav-btn admin-btn ${currentView === 'admin' ? 'active' : ''}`}
+                  <button
+                    className={`nav-btn ${currentView === 'admin' ? 'active' : ''}`}
                     onClick={() => handleNavigation('admin')}
                   >
                     🔧 Admin
@@ -122,8 +111,9 @@ function Navbar({
                 </li>
               )}
 
+              {/* SALIR NORMAL (SIN ESTILO ESPECIAL) */}
               <li>
-                <button className="nav-btn logout-btn" onClick={onLogout}>
+                <button className="nav-btn" onClick={onLogout}>
                   🚪 Salir
                 </button>
               </li>

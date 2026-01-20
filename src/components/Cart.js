@@ -1,4 +1,4 @@
-// src/components/Cart.js
+// src/components/Cart.js - CÓDIGO COMPLETO
 import React from 'react';
 import './Cart.css';
 
@@ -30,7 +30,14 @@ function Cart({ cart = [], updateQuantity, removeFromCart, getCartTotal, onNavig
             {cart.map(item => (
               <div key={item.id} className="cart-item">
                 <div className="item-image">
-                  {item.image}
+                  {item.image && item.image.startsWith('/uploads') ? (
+                    <img 
+                      src={`http://localhost:5000${item.image}`} 
+                      alt={item.name}
+                    />
+                  ) : (
+                    <span>{item.image}</span>
+                  )}
                 </div>
 
                 <div className="item-info">

@@ -1,4 +1,4 @@
-// src/components/Checkout.js
+// src/components/Checkout.js - CÓDIGO COMPLETO
 import React, { useState } from 'react';
 import api from '../services/api';
 import './Checkout.css';
@@ -199,7 +199,16 @@ function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
             <div className="summary-items">
               {cart.map(item => (
                 <div key={item.id} className="summary-item">
-                  <span className="item-emoji">{item.image}</span>
+                  <span className="item-emoji">
+                    {item.image && item.image.startsWith('/uploads') ? (
+                      <img 
+                        src={`http://localhost:5000${item.image}`} 
+                        alt={item.name}
+                      />
+                    ) : (
+                      <span>{item.image}</span>
+                    )}
+                  </span>
                   <div className="item-details">
                     <p className="item-name">{item.name}</p>
                     <p className="item-qty">{item.quantity} {item.unit}</p>
