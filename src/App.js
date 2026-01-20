@@ -1,4 +1,4 @@
-// src/App.js - VERSIÓN SIN REACT ROUTER
+// src/App.js - CÓDIGO COMPLETO CON CARRITO POR USUARIO
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -19,38 +19,64 @@ function App() {
   const [user, setUser] = useState(null);
   const [cart, setCart] = useState([]);
 
+  // Cargar autenticación y carrito al iniciar
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     
     if (token && userData) {
+      const parsedUser = JSON.parse(userData);
       setIsAuthenticated(true);
-      setUser(JSON.parse(userData));
-    }
-
-    // Cargar carrito guardado
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
+      setUser(parsedUser);
+      
+      // Cargar carrito específico del usuario
+      loadUserCart(parsedUser.id);
     }
   }, []);
 
-  // Guardar carrito en localStorage cuando cambie
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+  // Función para cargar el carrito del usuario
+  const loadUserCart = (userId) => {
+    const cartKey = `cart_${userId}`;
+    const savedCart = localStorage.getItem(cartKey);
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
+    } else {
+      setCart([]);
+    }
+  };
+
+  // Función para guardar el carrito del usuario
+  const saveUserCart = (userId, cartData) => {
+    const cartKey = `cart_${userId}`;
+    localStorage.setItem(cartKey, JSON.stringify(cartData));
+  };
 
   const handleLoginSuccess = (userData) => {
     setIsAuthenticated(true);
     setUser(userData);
     setShowLogin(false);
+    
+    // Cargar carrito del usuario que acaba de iniciar sesión
+    loadUserCart(userData.id);
+    
+    // Redirigir según el rol
+    if (userData.rol === 'administrador') {
+      setCurrentView('admin');
+    }
   };
 
   const handleLogout = () => {
+    // Guardar carrito antes de cerrar sesión
+    if (user) {
+      saveUserCart(user.id, cart);
+    }
+    
+    // Limpiar sesión
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
+    setCart([]);
     setCurrentView('home');
   };
 
@@ -72,23 +98,46 @@ function App() {
 
   // Funciones del carrito
   const addToCart = (product, quantity = 1) => {
+    if (!isAuthenticated) {
+      alert('Por favor inicia sesión para agregar productos al carrito');
+      setShowLogin(true);
+      return;
+    }
+
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
+      let newCart;
       
       if (existingItem) {
-        return prevCart.map(item =>
+        newCart = prevCart.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
+      } else {
+        newCart = [...prevCart, { ...product, quantity }];
       }
       
-      return [...prevCart, { ...product, quantity }];
+      // Guardar carrito del usuario
+      if (user) {
+        saveUserCart(user.id, newCart);
+      }
+      
+      return newCart;
     });
   };
 
   const removeFromCart = (productId) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+    setCart(prevCart => {
+      const newCart = prevCart.filter(item => item.id !== productId);
+      
+      // Guardar carrito del usuario
+      if (user) {
+        saveUserCart(user.id, newCart);
+      }
+      
+      return newCart;
+    });
   };
 
   const updateQuantity = (productId, quantity) => {
@@ -97,15 +146,27 @@ function App() {
       return;
     }
     
-    setCart(prevCart =>
-      prevCart.map(item =>
+    setCart(prevCart => {
+      const newCart = prevCart.map(item =>
         item.id === productId ? { ...item, quantity } : item
-      )
-    );
+      );
+      
+      // Guardar carrito del usuario
+      if (user) {
+        saveUserCart(user.id, newCart);
+      }
+      
+      return newCart;
+    });
   };
 
   const clearCart = () => {
     setCart([]);
+    
+    // Limpiar carrito del usuario en localStorage
+    if (user) {
+      saveUserCart(user.id, []);
+    }
   };
 
   const getCartTotal = () => {

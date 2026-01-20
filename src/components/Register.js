@@ -1,13 +1,11 @@
-// src/components/Register.js
+// src/components/Register.js - CÓDIGO COMPLETO
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import './Auth.css';
+import api from '../services/api';
+import './Login.css'; // Usar los mismos estilos que Login
 
-function Register({ onClose, onSwitchToLogin }) {
-  const { register } = useAuth();
+function Register({ onClose, onRegisterSuccess, onSwitchToLogin }) {
   const [formData, setFormData] = useState({
     nombre: '',
-    apellido: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -21,94 +19,71 @@ function Register({ onClose, onSwitchToLogin }) {
       ...formData,
       [e.target.name]: e.target.value
     });
-    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
     // Validaciones
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
-      setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
       setError('La contraseña debe tener al menos 6 caracteres');
-      setLoading(false);
       return;
     }
 
-    const { confirmPassword, ...userData } = formData;
-    const result = await register(userData);
+    setLoading(true);
 
-    if (result.success) {
-      onClose();
-    } else {
-      setError(result.message);
+    try {
+      const response = await api.post('/auth/register', {
+        nombre: formData.nombre,
+        email: formData.email,
+        password: formData.password,
+        telefono: formData.telefono
+      });
+
+      if (response.data.success) {
+        alert('✅ Registro exitoso. Por favor inicia sesión.');
+        onRegisterSuccess();
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al registrarse');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="auth-overlay" onClick={onClose}>
-      <div className="auth-modal register-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="close-auth-btn" onClick={onClose}>✕</button>
+    <div className="login-overlay" onClick={onClose}>
+      <div className="login-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="login-close" onClick={onClose}>✕</button>
         
-        <div className="auth-header">
-          <div className="auth-icon">🌾</div>
-          <h2>Crear Cuenta</h2>
-          <p>Únete a Agrícola Fresh y disfruta de productos frescos</p>
+        <div className="login-header">
+          <h2>📝 Crear Cuenta</h2>
+          <p>Únete a Agrícola Fresh</p>
         </div>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
-          {error && (
-            <div className="error-alert">
-              <span className="alert-icon">⚠️</span>
-              {error}
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="login-form">
+          {error && <div className="error-message">{error}</div>}
 
-          <div className="form-grid">
-            <div className="form-group">
-              <label>
-                <span className="label-icon">👤</span>
-                Nombre
-              </label>
-              <input
-                type="text"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                placeholder="Ej: Juan"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>
-                <span className="label-icon">👤</span>
-                Apellido
-              </label>
-              <input
-                type="text"
-                name="apellido"
-                value={formData.apellido}
-                onChange={handleChange}
-                placeholder="Ej: Pérez"
-                required
-              />
-            </div>
+          <div className="form-group">
+            <label>Nombre Completo</label>
+            <input
+              type="text"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              placeholder="Tu nombre completo"
+              required
+            />
           </div>
 
           <div className="form-group">
-            <label>
-              <span className="label-icon">📧</span>
-              Correo Electrónico
-            </label>
+            <label>Email</label>
             <input
               type="email"
               name="email"
@@ -120,92 +95,57 @@ function Register({ onClose, onSwitchToLogin }) {
           </div>
 
           <div className="form-group">
-            <label>
-              <span className="label-icon">📱</span>
-              Teléfono
-            </label>
+            <label>Teléfono</label>
             <input
               type="tel"
               name="telefono"
               value={formData.telefono}
               onChange={handleChange}
               placeholder="0999999999"
+              required
             />
           </div>
 
-          <div className="form-grid">
-            <div className="form-group">
-              <label>
-                <span className="label-icon">🔒</span>
-                Contraseña
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Mínimo 6 caracteres"
-                required
-                minLength="6"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>
-                <span className="label-icon">🔒</span>
-                Confirmar
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Repite tu contraseña"
-                required
-              />
-            </div>
+          <div className="form-group">
+            <label>Contraseña</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Mínimo 6 caracteres"
+              required
+            />
           </div>
 
-          <button type="submit" className="auth-submit-btn" disabled={loading}>
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Creando cuenta...
-              </>
-            ) : (
-              <>
-                <span>✨</span>
-                Crear Mi Cuenta
-              </>
-            )}
+          <div className="form-group">
+            <label>Confirmar Contraseña</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Repite tu contraseña"
+              required
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            className="login-button"
+            disabled={loading}
+          >
+            {loading ? 'Registrando...' : 'Crear Cuenta'}
           </button>
-
-          <div className="password-hint">
-            <span>💡</span>
-            La contraseña debe tener al menos 6 caracteres
-          </div>
         </form>
 
-        <div className="auth-footer">
-          <p>¿Ya tienes una cuenta?</p>
-          <button className="switch-auth-btn" onClick={onSwitchToLogin}>
-            Iniciar Sesión →
-          </button>
-        </div>
-
-        <div className="auth-benefits">
-          <div className="benefit-item">
-            <span>🌱</span>
-            <p>Productos 100% frescos</p>
-          </div>
-          <div className="benefit-item">
-            <span>🚚</span>
-            <p>Entrega rápida</p>
-          </div>
-          <div className="benefit-item">
-            <span>💳</span>
-            <p>Pago seguro</p>
-          </div>
+        <div className="login-footer">
+          <p>
+            ¿Ya tienes cuenta?{' '}
+            <button onClick={onSwitchToLogin} className="switch-button">
+              Inicia sesión aquí
+            </button>
+          </p>
         </div>
       </div>
     </div>

@@ -32,6 +32,7 @@
 .brand-text {
   font-size: 1.55rem;
   background: linear-gradient(135deg, #4a7c2c, #2d5016);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
