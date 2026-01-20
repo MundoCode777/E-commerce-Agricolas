@@ -1,42 +1,50 @@
-/* src/components/ProductList.css */
+/* src/components/ProductList.css - DISEÑO MEJORADO */
+
 .products-section {
   padding: 4rem 0;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .section-title {
   text-align: center;
-  font-size: 2.5rem;
+  font-size: 3rem;
   color: #2d5016;
   margin-bottom: 1rem;
+  font-weight: 800;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: -0.5px;
 }
 
 .section-subtitle {
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   color: #666;
-  margin-bottom: 3rem;
-}
-
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 2rem;
-  padding: 1rem 0;
+  margin-bottom: 3.5rem;
+  font-weight: 400;
 }
 
 .loading-products {
-  text-align: center;
-  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  gap: 1.5rem;
 }
 
 .spinner-large {
-  width: 60px;
-  height: 60px;
-  border: 6px solid #f3f3f3;
-  border-top: 6px solid #4a7c2c;
+  width: 80px;
+  height: 80px;
+  border: 7px solid #f3f3f3;
+  border-top: 7px solid #4a7c2c;
   border-radius: 50%;
-  margin: 0 auto 1.5rem;
   animation: spin 1s linear infinite;
 }
 
@@ -46,34 +54,273 @@
 }
 
 .loading-products p {
+  font-size: 1.3rem;
   color: #666;
-  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .no-products {
   text-align: center;
-  padding: 4rem 2rem;
-  color: #999;
+  padding: 5rem 2rem;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  margin: 3rem auto;
+  max-width: 700px;
 }
 
 .no-products-icon {
-  font-size: 5rem;
+  font-size: 8rem;
   display: block;
-  margin-bottom: 1rem;
-  opacity: 0.5;
+  margin-bottom: 2rem;
+  filter: grayscale(50%);
+  opacity: 0.7;
 }
 
 .no-products p {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+  color: #666;
+  margin: 0;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 2.5rem;
+  padding: 2rem 0;
+  animation: fadeInGrid 0.6s ease;
+}
+
+@keyframes fadeInGrid {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación de aparición escalonada para las cards */
+.products-grid .product-card {
+  animation: fadeInCard 0.6s ease forwards;
+  opacity: 0;
+}
+
+.products-grid .product-card:nth-child(1) { animation-delay: 0.1s; }
+.products-grid .product-card:nth-child(2) { animation-delay: 0.15s; }
+.products-grid .product-card:nth-child(3) { animation-delay: 0.2s; }
+.products-grid .product-card:nth-child(4) { animation-delay: 0.25s; }
+.products-grid .product-card:nth-child(5) { animation-delay: 0.3s; }
+.products-grid .product-card:nth-child(6) { animation-delay: 0.35s; }
+.products-grid .product-card:nth-child(7) { animation-delay: 0.4s; }
+.products-grid .product-card:nth-child(8) { animation-delay: 0.45s; }
+.products-grid .product-card:nth-child(9) { animation-delay: 0.5s; }
+.products-grid .product-card:nth-child(n+10) { animation-delay: 0.55s; }
+
+@keyframes fadeInCard {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive para diferentes tamaños */
+@media (max-width: 1400px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2.2rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+  }
+
+  .section-subtitle {
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 968px) {
+  .products-section {
+    padding: 3rem 0;
+  }
+
+  .section-title {
+    font-size: 2.2rem;
+  }
+
+  .section-subtitle {
+    font-size: 1.05rem;
+    padding: 0 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.8rem;
+  }
 }
 
 @media (max-width: 768px) {
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
+  .container {
+    padding: 0 1rem;
   }
-  
+
+  .products-section {
+    padding: 2.5rem 0;
+  }
+
   .section-title {
     font-size: 2rem;
   }
+
+  .section-subtitle {
+    font-size: 1rem;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+  }
+
+  .loading-products {
+    min-height: 400px;
+  }
+
+  .spinner-large {
+    width: 70px;
+    height: 70px;
+    border-width: 6px;
+  }
+
+  .loading-products p {
+    font-size: 1.2rem;
+  }
+
+  .no-products {
+    padding: 4rem 1.5rem;
+    margin: 2rem auto;
+  }
+
+  .no-products-icon {
+    font-size: 6rem;
+  }
+
+  .no-products p {
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.3rem;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .products-section {
+    padding: 2rem 0;
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    padding: 1rem 0;
+  }
+
+  .container {
+    padding: 0 0.8rem;
+  }
+
+  .loading-products {
+    min-height: 350px;
+  }
+
+  .spinner-large {
+    width: 60px;
+    height: 60px;
+    border-width: 5px;
+  }
+
+  .loading-products p {
+    font-size: 1.1rem;
+  }
+
+  .no-products {
+    padding: 3.5rem 1.2rem;
+  }
+
+  .no-products-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .no-products p {
+    font-size: 1.05rem;
+  }
+}
+
+/* Efectos de hover mejorados en el grid */
+.products-grid:hover .product-card:not(:hover) {
+  opacity: 0.7;
+  transform: scale(0.98);
+}
+
+.products-grid .product-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scroll suave */
+.products-section {
+  scroll-behavior: smooth;
+}
+
+/* Sombra sutil en el contenedor */
+.container {
+  position: relative;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #4a7c2c, transparent);
+  border-radius: 2px;
 }

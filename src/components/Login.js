@@ -1,13 +1,16 @@
 // src/components/Login.js
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import './Auth.css';
+import api from '../services/api';
+import './Login.css';
 
-function Login({ onClose, onSwitchToRegister }) {
-  const { login } = useAuth();
+function Login({ onClose, onLoginSuccess }) {
+  const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
+    nombre: '',
+    apellido: '',
     email: '',
-    password: ''
+    password: '',
+    telefono: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,103 +28,108 @@ function Login({ onClose, onSwitchToRegister }) {
     setLoading(true);
     setError('');
 
-    const result = await login(formData);
+    try {
+      const endpoint = isRegister ? '/auth/register' : '/auth/login';
+      const data = isRegister ? formData : {
+        email: formData.email,
+        password: formData.password
+      };
 
-    if (result.success) {
-      onClose();
-    } else {
-      setError(result.message);
+      const response = await api.post(endpoint, data);
+
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.usuario));
+        
+        onLoginSuccess(response.data.usuario);
+        onClose();
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error en el servidor');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="auth-overlay" onClick={onClose}>
-      <div className="auth-modal login-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="close-auth-btn" onClick={onClose}>✕</button>
+    <div className="login-overlay" onClick={onClose}>
+      <div className="login-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="close-btn" onClick={onClose}>✕</button>
         
-        <div className="auth-header">
-          <div className="auth-icon">🌾</div>
-          <h2>Iniciar Sesión</h2>
-          <p>Bienvenido de vuelta a Agrícola Fresh</p>
-        </div>
+        <h2>{isRegister ? '📝 Crear Cuenta' : '🔐 Iniciar Sesión'}</h2>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
-          {error && (
-            <div className="error-alert">
-              <span className="alert-icon">⚠️</span>
-              {error}
-            </div>
+        {error && <div className="error-message">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          {isRegister && (
+            <>
+              <div className="form-group">
+                <label>Nombre</label>
+                <input
+                  type="text"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Apellido</label>
+                <input
+                  type="text"
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Teléfono</label>
+                <input
+                  type="tel"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                />
+              </div>
+            </>
           )}
 
           <div className="form-group">
-            <label>
-              <span className="label-icon">📧</span>
-              Correo Electrónico
-            </label>
+            <label>Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="tu@email.com"
               required
-              autoFocus
             />
           </div>
 
           <div className="form-group">
-            <label>
-              <span className="label-icon">🔒</span>
-              Contraseña
-            </label>
+            <label>Contraseña</label>
             <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Tu contraseña"
               required
+              minLength="6"
             />
           </div>
 
-          <button type="submit" className="auth-submit-btn" disabled={loading}>
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Iniciando sesión...
-              </>
-            ) : (
-              <>
-                <span>🔓</span>
-                Iniciar Sesión
-              </>
-            )}
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? 'Procesando...' : (isRegister ? 'Registrarse' : 'Iniciar Sesión')}
           </button>
         </form>
 
-        <div className="auth-footer">
-          <p>¿No tienes cuenta?</p>
-          <button className="switch-auth-btn" onClick={onSwitchToRegister}>
-            Crear una cuenta →
+        <div className="toggle-form">
+          {isRegister ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}
+          <button onClick={() => setIsRegister(!isRegister)}>
+            {isRegister ? 'Iniciar Sesión' : 'Registrarse'}
           </button>
-        </div>
-
-        <div className="auth-features">
-          <div className="feature-item">
-            <span className="feature-icon">⚡</span>
-            <div>
-              <strong>Acceso rápido</strong>
-              <p>A tus pedidos y favoritos</p>
-            </div>
-          </div>
-          <div className="feature-item">
-            <span className="feature-icon">🎁</span>
-            <div>
-              <strong>Ofertas exclusivas</strong>
-              <p>Solo para miembros</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

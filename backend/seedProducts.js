@@ -6,6 +6,7 @@ const Product = require('./models/Product');
 dotenv.config();
 
 const productos = [
+  // ========== VERDURAS ==========
   {
     nombre: 'Tomates Orgánicos',
     descripcion: 'Tomates frescos y jugosos',
@@ -16,6 +17,8 @@ const productos = [
     unit: 'kg',
     categoria: 'verduras',
     stock: 150,
+    origen: 'Ecuador',
+    certificaciones: ['Orgánico', 'Sin Pesticidas'],
     beneficios: [
       'Rico en licopeno y antioxidantes',
       'Bajo en calorías',
@@ -41,6 +44,7 @@ const productos = [
     unit: 'unidad',
     categoria: 'verduras',
     stock: 200,
+    origen: 'Ecuador',
     beneficios: [
       'Baja en calorías',
       'Rica en fibra',
@@ -66,6 +70,7 @@ const productos = [
     unit: 'kg',
     categoria: 'verduras',
     stock: 180,
+    origen: 'Ecuador',
     beneficios: [
       'Excelente fuente de beta-caroteno',
       'Mejora la visión',
@@ -82,31 +87,6 @@ const productos = [
     }
   },
   {
-    nombre: 'Papas',
-    descripcion: 'Papas de primera calidad',
-    descripcionLarga: 'Papas frescas ideales para cualquier preparación. Perfectas para freír, hornear o hervir. Alta calidad garantizada.',
-    precio: 1.50,
-    image: '🥔',
-    imagenes: ['🥔', '🥔', '🥔'],
-    unit: 'kg',
-    categoria: 'tuberculos',
-    stock: 250,
-    beneficios: [
-      'Rica en potasio',
-      'Fuente de energía',
-      'Alto contenido de vitamina C',
-      'Versátil en la cocina'
-    ],
-    informacionNutricional: {
-      calorias: '77 kcal por 100g',
-      proteinas: '2g',
-      carbohidratos: '17g',
-      grasas: '0.1g',
-      fibra: '2.2g',
-      vitaminas: ['Vitamina C', 'Vitamina B6', 'Potasio']
-    }
-  },
-  {
     nombre: 'Brócoli',
     descripcion: 'Brócoli fresco y saludable',
     descripcionLarga: 'Brócoli verde fresco, rico en nutrientes y antioxidantes. Perfecto para una alimentación saludable.',
@@ -116,6 +96,7 @@ const productos = [
     unit: 'kg',
     categoria: 'verduras',
     stock: 120,
+    origen: 'Ecuador',
     beneficios: [
       'Alto en vitamina C y K',
       'Propiedades anticancerígenas',
@@ -141,6 +122,7 @@ const productos = [
     unit: 'kg',
     categoria: 'verduras',
     stock: 100,
+    origen: 'Ecuador',
     beneficios: [
       'Rico en vitamina C',
       'Antioxidantes naturales',
@@ -166,6 +148,7 @@ const productos = [
     unit: 'kg',
     categoria: 'verduras',
     stock: 220,
+    origen: 'Ecuador',
     beneficios: [
       'Propiedades antibacterianas',
       'Mejora la salud cardiovascular',
@@ -181,6 +164,36 @@ const productos = [
       vitaminas: ['Vitamina C', 'Vitamina B6', 'Ácido fólico']
     }
   },
+
+  // ========== TUBÉRCULOS ==========
+  {
+    nombre: 'Papas',
+    descripcion: 'Papas de primera calidad',
+    descripcionLarga: 'Papas frescas ideales para cualquier preparación. Perfectas para freír, hornear o hervir. Alta calidad garantizada.',
+    precio: 1.50,
+    image: '🥔',
+    imagenes: ['🥔', '🥔', '🥔'],
+    unit: 'kg',
+    categoria: 'tuberculos',
+    stock: 250,
+    origen: 'Ecuador',
+    beneficios: [
+      'Rica en potasio',
+      'Fuente de energía',
+      'Alto contenido de vitamina C',
+      'Versátil en la cocina'
+    ],
+    informacionNutricional: {
+      calorias: '77 kcal por 100g',
+      proteinas: '2g',
+      carbohidratos: '17g',
+      grasas: '0.1g',
+      fibra: '2.2g',
+      vitaminas: ['Vitamina C', 'Vitamina B6', 'Potasio']
+    }
+  },
+
+  // ========== GRANOS ==========
   {
     nombre: 'Maíz',
     descripcion: 'Maíz tierno y dulce',
@@ -191,6 +204,7 @@ const productos = [
     unit: 'kg',
     categoria: 'granos',
     stock: 150,
+    origen: 'Ecuador',
     beneficios: [
       'Alto contenido de fibra',
       'Fuente de energía',
@@ -205,6 +219,165 @@ const productos = [
       fibra: '2.7g',
       vitaminas: ['Vitamina B', 'Vitamina C', 'Magnesio']
     }
+  },
+
+  // ========== AGROQUÍMICOS ==========
+  {
+    nombre: 'Glifosato 48% SL',
+    descripcion: 'Herbicida sistémico de amplio espectro',
+    descripcionLarga: 'El glifosato es un herbicida sistémico no selectivo utilizado para el control eficaz de malezas anuales y perennes. Actúa inhibiendo el crecimiento de las plantas no deseadas y es ampliamente usado en agricultura para la preparación del terreno antes de la siembra. Formulación concentrada al 48%.',
+    precio: 20.00,
+    image: '🧪',
+    imagenes: ['🧪', '⚠️', '🌱'],
+    unit: 'litro',
+    categoria: 'agroquimicos',
+    stock: 80,
+    disponible: true,
+    marca: 'AgroTech',
+    esAgroquimico: true,
+    beneficios: [
+      'Control eficaz de malezas',
+      'Acción sistémica',
+      'Amplio espectro',
+      'Uso agrícola profesional'
+    ],
+    informacionUso: {
+      tipo: 'Herbicida sistémico no selectivo',
+      aplicacion: 'Aspersión foliar con equipo de bombeo',
+      dosis: '1-3 litros por hectárea según tipo de maleza (consultar etiqueta)',
+      advertencia: 'USO EXCLUSIVO AGRÍCOLA - VENTA BAJO RECETA AGRONÓMICA'
+    },
+    informacionSeguridad: {
+      precauciones: [
+        'Usar equipo de protección personal completo (guantes, mascarilla, overol)',
+        'Evitar contacto con la piel, ojos y mucosas',
+        'No inhalar vapores o neblina',
+        'No contaminar fuentes de agua, ríos o quebradas',
+        'Mantener alejado de niños y animales domésticos',
+        'No comer, beber ni fumar durante la aplicación',
+        'Lavar las manos y cara después del uso',
+        'Almacenar en lugar fresco, seco y bajo llave'
+      ],
+      simbolos: ['☠️', '⚠️', '🚫'],
+      clasificacion: 'Clase II - Moderadamente Peligroso',
+      restricciones: 'Prohibido su uso cerca de cuerpos de agua. Aplicar solo en cultivos autorizados.'
+    }
+  },
+  {
+    nombre: 'Abono NPK 10-30-10',
+    descripcion: 'Fertilizante completo balanceado',
+    descripcionLarga: 'Fertilizante granulado de liberación controlada con balance NPK 10-30-10. Ideal para promover el desarrollo radicular y la floración. Rico en fósforo para etapas críticas del cultivo.',
+    precio: 35.00,
+    image: '💊',
+    imagenes: ['💊', '🌱', '📦'],
+    unit: 'saco 50kg',
+    categoria: 'fertilizantes',
+    stock: 60,
+    disponible: true,
+    marca: 'FertiCrop',
+    esAgroquimico: false,
+    beneficios: [
+      'Promueve desarrollo radicular',
+      'Estimula la floración',
+      'Balance nutricional completo',
+      'Liberación controlada'
+    ],
+    informacionUso: {
+      tipo: 'Fertilizante NPK granulado',
+      aplicacion: 'Aplicación al suelo incorporado o en banda',
+      dosis: '200-400 kg por hectárea según cultivo y análisis de suelo',
+      advertencia: 'Seguir recomendaciones agronómicas'
+    },
+    informacionSeguridad: {
+      precauciones: [
+        'Usar guantes al manipular',
+        'Evitar contacto con los ojos',
+        'Lavar las manos después de usar',
+        'Almacenar en lugar seco y ventilado'
+      ],
+      simbolos: ['⚠️'],
+      clasificacion: 'Producto de baja toxicidad',
+      restricciones: 'No aplicar en exceso para evitar contaminación de aguas subterráneas'
+    }
+  },
+  {
+    nombre: 'Insecticida Cipermetrina 25%',
+    descripcion: 'Insecticida piretroide de amplio espectro',
+    descripcionLarga: 'Insecticida de contacto e ingestión del grupo de los piretroides. Efectivo contra una amplia gama de insectos plaga en cultivos agrícolas. Acción rápida y efecto residual.',
+    precio: 28.00,
+    image: '🦟',
+    imagenes: ['🦟', '⚠️', '🌿'],
+    unit: 'litro',
+    categoria: 'agroquimicos',
+    stock: 50,
+    disponible: true,
+    marca: 'PlagControl',
+    esAgroquimico: true,
+    beneficios: [
+      'Acción rápida contra insectos',
+      'Amplio espectro de control',
+      'Efecto residual prolongado',
+      'Compatible con otros productos'
+    ],
+    informacionUso: {
+      tipo: 'Insecticida piretroide',
+      aplicacion: 'Aspersión foliar dirigida a las plagas',
+      dosis: '0.5-1 litro por hectárea según plaga (consultar etiqueta)',
+      advertencia: 'USO AGRÍCOLA - VENTA BAJO RECETA AGRONÓMICA'
+    },
+    informacionSeguridad: {
+      precauciones: [
+        'Usar equipo de protección personal completo',
+        'Altamente tóxico para abejas y peces',
+        'No aplicar en floración',
+        'Respetar períodos de carencia antes de cosecha',
+        'No contaminar fuentes de agua',
+        'Evitar deriva hacia cultivos vecinos',
+        'Almacenar bajo llave lejos de alimentos'
+      ],
+      simbolos: ['☠️', '⚠️', '🐝', '🐟'],
+      clasificacion: 'Clase II - Moderadamente Peligroso',
+      restricciones: 'Prohibido uso en zonas cercanas a colmenas o cuerpos de agua. Respetar carencia de 15 días.'
+    }
+  },
+  {
+    nombre: 'Fungicida Mancozeb 80%',
+    descripcion: 'Fungicida preventivo de contacto',
+    descripcionLarga: 'Fungicida de contacto de amplio espectro para el control preventivo de enfermedades fungosas. Ideal para aplicaciones preventivas en diversos cultivos. Formulación en polvo mojable.',
+    precio: 18.00,
+    image: '🍄',
+    imagenes: ['🍄', '⚠️', '💧'],
+    unit: 'kg',
+    categoria: 'agroquimicos',
+    stock: 70,
+    disponible: true,
+    marca: 'FungiPro',
+    esAgroquimico: true,
+    beneficios: [
+      'Amplio espectro de acción',
+      'Control preventivo eficaz',
+      'Compatible en mezclas',
+      'Buena adherencia foliar'
+    ],
+    informacionUso: {
+      tipo: 'Fungicida preventivo de contacto',
+      aplicacion: 'Aspersión foliar preventiva',
+      dosis: '2-3 kg por hectárea según cultivo y enfermedad',
+      advertencia: 'USO AGRÍCOLA - APLICAR PREVENTIVAMENTE'
+    },
+    informacionSeguridad: {
+      precauciones: [
+        'Usar equipo de protección completo',
+        'Evitar inhalación del polvo',
+        'No aplicar con equipos manuales sin protección',
+        'Respetar intervalos entre aplicaciones',
+        'No mezclar con productos alcalinos',
+        'Lavar equipo después de usar'
+      ],
+      simbolos: ['⚠️', '🚫'],
+      clasificacion: 'Clase III - Ligeramente Peligroso',
+      restricciones: 'Respetar carencia de 7-14 días según cultivo antes de cosecha'
+    }
   }
 ];
 
@@ -218,8 +391,13 @@ const seedProducts = async () => {
     console.log('🗑️  Productos existentes eliminados');
 
     // Insertar nuevos productos
-    await Product.insertMany(productos);
-    console.log('✅ Productos creados exitosamente');
+    const productosCreados = await Product.insertMany(productos);
+    console.log(`✅ ${productosCreados.length} productos creados exitosamente`);
+    
+    console.log('\n📦 Productos creados:');
+    productosCreados.forEach(p => {
+      console.log(`  - ${p.nombre} (${p.categoria}) - $${p.precio}`);
+    });
 
     process.exit();
   } catch (error) {

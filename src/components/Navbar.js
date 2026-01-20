@@ -1,88 +1,143 @@
 // src/components/Navbar.js
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import Login from './Login';
-import Register from './Register';
-import UserProfile from './UserProfile';
 import './Navbar.css';
 
-function Navbar({ cartCount, onCartClick }) {
-  const { isAuthenticated, user } = useAuth();
-  const [showLogin, setShowLogin] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
+function Navbar({ 
+  onLoginClick, 
+  isAuthenticated, 
+  user, 
+  onLogout, 
+  onNavigate, 
+  currentView = 'home',
+  cartCount = 0
+}) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleNavigation = (view) => {
+    onNavigate(view);
+    setMobileMenuOpen(false);
+  };
 
   const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (currentView !== 'home') {
+      onNavigate('home');
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
-  };
-
-  const handleSwitchToRegister = () => {
-    setShowLogin(false);
-    setShowRegister(true);
-  };
-
-  const handleSwitchToLogin = () => {
-    setShowRegister(false);
-    setShowLogin(true);
+    setMobileMenuOpen(false);
   };
 
   return (
-    <>
-      <nav className="navbar">
-        <div className="container nav-container">
-          <div className="logo" onClick={() => scrollToSection('inicio')} style={{ cursor: 'pointer' }}>
-            <span className="logo-icon">🌾</span>
-            <span className="logo-text">Agrícola Fresh</span>
-          </div>
+    <nav className="navbar">
+      <div className="container navbar-content">
+        <div className="navbar-brand" onClick={() => handleNavigation('home')}>
+          <span className="brand-icon">🌾</span>
+          <span className="brand-text">Agrícola Fresh</span>
+        </div>
+
+        {/* Botón menú móvil */}
+        <button 
+          className="mobile-menu-btn"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? '✕' : '☰'}
+        </button>
+
+        {/* Menú de navegación */}
+        <ul className={`navbar-menu ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+          <li>
+            <button 
+              className={currentView === 'home' ? 'nav-btn active' : 'nav-btn'}
+              onClick={() => handleNavigation('home')}
+            >
+              🏠 Inicio
+            </button>
+          </li>
           
-          <ul className="nav-links">
-            <li><button onClick={() => scrollToSection('inicio')}>Inicio</button></li>
-            <li><button onClick={() => scrollToSection('productos')}>Productos</button></li>
-            <li><button onClick={() => scrollToSection('nosotros')}>Nosotros</button></li>
-            <li><button onClick={() => scrollToSection('contacto')}>Contacto</button></li>
-          </ul>
+          <li>
+            <button 
+              className="nav-btn"
+              onClick={() => scrollToSection('productos')}
+            >
+              🛍️ Productos
+            </button>
+          </li>
+
+          <li>
+            <button 
+              className="nav-btn"
+              onClick={() => scrollToSection('nosotros')}
+            >
+              ℹ️ Nosotros
+            </button>
+          </li>
+
+          <li>
+            <button 
+              className="nav-btn"
+              onClick={() => scrollToSection('contacto')}
+            >
+              📞 Contacto
+            </button>
+          </li>
           
-          <div className="nav-actions">
-            <button className="cart-button" onClick={onCartClick}>
-              <span className="cart-icon">🛒</span>
+          <li>
+            <button 
+              className={`nav-btn cart-btn ${currentView === 'cart' ? 'active' : ''}`}
+              onClick={() => handleNavigation('cart')}
+            >
+              🛒 Carrito
               {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
             </button>
+          </li>
 
-            {isAuthenticated ? (
-              <button className="user-button" onClick={() => setShowProfile(true)}>
-                <span className="user-avatar">{user?.avatar}</span>
-                <span className="user-name">{user?.nombre}</span>
+          {isAuthenticated ? (
+            <>
+              <li>
+                <button 
+                  className={`nav-btn ${currentView === 'profile' ? 'active' : ''}`}
+                  onClick={() => handleNavigation('profile')}
+                >
+                  👤 {user?.nombre || 'Perfil'}
+                </button>
+              </li>
+
+              {user?.rol === 'administrador' && (
+                <li>
+                  <button 
+                    className={`nav-btn admin-btn ${currentView === 'admin' ? 'active' : ''}`}
+                    onClick={() => handleNavigation('admin')}
+                  >
+                    🔧 Admin
+                  </button>
+                </li>
+              )}
+
+              <li>
+                <button className="nav-btn logout-btn" onClick={onLogout}>
+                  🚪 Salir
+                </button>
+              </li>
+            </>
+          ) : (
+            <li>
+              <button className="nav-btn login-btn" onClick={onLoginClick}>
+                🔑 Iniciar Sesión
               </button>
-            ) : (
-              <button className="login-button" onClick={() => setShowLogin(true)}>
-                👤 Ingresar
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {showLogin && (
-        <Login 
-          onClose={() => setShowLogin(false)} 
-          onSwitchToRegister={handleSwitchToRegister}
-        />
-      )}
-
-      {showRegister && (
-        <Register 
-          onClose={() => setShowRegister(false)} 
-          onSwitchToLogin={handleSwitchToLogin}
-        />
-      )}
-
-      {showProfile && (
-        <UserProfile onClose={() => setShowProfile(false)} />
-      )}
-    </>
+            </li>
+          )}
+        </ul>
+      </div>
+    </nav>
   );
 }
 

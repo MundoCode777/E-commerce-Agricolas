@@ -2,75 +2,105 @@
 import React from 'react';
 import './Cart.css';
 
-function Cart({ items, onClose, onUpdateQuantity, onRemove, onProceedToCheckout }) {
-  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+function Cart({ cart = [], updateQuantity, removeFromCart, getCartTotal, onNavigate }) {
+  if (!cart || cart.length === 0) {
+    return (
+      <div className="cart-page">
+        <div className="container">
+          <div className="cart-empty">
+            <span className="cart-empty-icon">🛒</span>
+            <h2>Tu carrito está vacío</h2>
+            <p>Agrega algunos productos frescos y orgánicos</p>
+            <button className="btn-shop" onClick={() => onNavigate('home')}>
+              Ir de Compras
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="cart-overlay" onClick={onClose}>
-      <div className="cart-sidebar" onClick={(e) => e.stopPropagation()}>
-        <div className="cart-header">
-          <h2>🛒 Mi Carrito</h2>
-          <button className="close-button" onClick={onClose}>✕</button>
-        </div>
+    <div className="cart-page">
+      <div className="container">
+        <h1 className="cart-title">🛒 Mi Carrito</h1>
 
-        <div className="cart-items">
-          {items.length === 0 ? (
-            <div className="empty-cart">
-              <p className="empty-icon">🛒</p>
-              <p>Tu carrito está vacío</p>
-            </div>
-          ) : (
-            items.map(item => (
+        <div className="cart-content">
+          <div className="cart-items">
+            {cart.map(item => (
               <div key={item.id} className="cart-item">
-                <span className="cart-item-emoji">{item.image}</span>
-                
-                <div className="cart-item-details">
-                  <h4>{item.name}</h4>
-                  <p className="cart-item-price">${item.price.toFixed(2)} / {item.unit}</p>
+                <div className="item-image">
+                  {item.image}
                 </div>
 
-                <div className="cart-item-actions">
-                  <div className="quantity-controls">
-                    <button 
-                      onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                    >
-                      -
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button 
-                      onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                    >
-                      +
-                    </button>
-                  </div>
-                  
+                <div className="item-info">
+                  <h3>{item.name}</h3>
+                  <p className="item-price">${item.price?.toFixed(2)} / {item.unit}</p>
+                </div>
+
+                <div className="item-quantity">
                   <button 
-                    className="remove-button"
-                    onClick={() => onRemove(item.id)}
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    className="qty-btn"
                   >
-                    🗑️
+                    -
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button 
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    className="qty-btn"
+                  >
+                    +
                   </button>
                 </div>
 
-                <div className="cart-item-total">
+                <div className="item-total">
                   ${(item.price * item.quantity).toFixed(2)}
                 </div>
-              </div>
-            ))
-          )}
-        </div>
 
-        {items.length > 0 && (
-          <div className="cart-footer">
-            <div className="cart-total">
-              <span>Total:</span>
-              <span className="total-amount">${total.toFixed(2)}</span>
+                <button 
+                  onClick={() => removeFromCart(item.id)}
+                  className="item-remove"
+                >
+                  🗑️
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="cart-summary">
+            <h2>Resumen del Pedido</h2>
+            
+            <div className="summary-row">
+              <span>Subtotal:</span>
+              <span>${getCartTotal().toFixed(2)}</span>
             </div>
-            <button className="checkout-button" onClick={onProceedToCheckout}>
+
+            <div className="summary-row">
+              <span>Envío:</span>
+              <span>$3.00</span>
+            </div>
+
+            <div className="summary-row total">
+              <span>Total:</span>
+              <span>${(getCartTotal() + 3).toFixed(2)}</span>
+            </div>
+
+            <button 
+              className="checkout-btn"
+              onClick={() => onNavigate('checkout')}
+            >
               Proceder al Pago
             </button>
+
+            <button 
+              className="continue-btn"
+              onClick={() => onNavigate('home')}
+            >
+              Continuar Comprando
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

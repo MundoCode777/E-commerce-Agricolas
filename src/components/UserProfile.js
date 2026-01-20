@@ -1,40 +1,51 @@
 // src/components/UserProfile.js
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { orderService } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import api from '../services/api';
 import './UserProfile.css';
 
-function UserProfile({ onClose }) {
-  const { user, logout, updateProfile } = useAuth();
+function UserProfile({ user, onLogout, onNavigate }) {
   const [activeTab, setActiveTab] = useState('perfil');
-  const [editing, setEditing] = useState(false);
-  const [orders, setOrders] = useState([]);
-  const [loadingOrders, setLoadingOrders] = useState(false);
-  
+  const [ordenes, setOrdenes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
     nombre: user?.nombre || '',
     apellido: user?.apellido || '',
     telefono: user?.telefono || '',
     direccion: {
-      calle: user?.direccion?.calle || '',
-      ciudad: user?.direccion?.ciudad || 'Milagro',
-      provincia: user?.direccion?.provincia || 'Guayas',
-      codigoPostal: user?.direccion?.codigoPostal || ''
+      direccion: user?.direccion?.direccion || '',
+      ciudad: user?.direccion?.ciudad || '',
+      provincia: user?.direccion?.provincia || ''
     }
   });
-  
-  const [message, setMessage] = useState({ type: '', text: '' });
+
+  useEffect(() => {
+    if (activeTab === 'ordenes') {
+      cargarOrdenes();
+    }
+  }, [activeTab]);
+
+  const cargarOrdenes = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/orders/mis-ordenes');
+      setOrdenes(response.data.ordenes || []);
+    } catch (error) {
+      console.error('Error al cargar órdenes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
+    if (name.includes('direccion.')) {
+      const field = name.split('.')[1];
       setFormData(prev => ({
         ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
+        direccion: {
+          ...prev.direccion,
+          [field]: value
         }
       }));
     } else {
@@ -47,81 +58,56 @@ function UserProfile({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await updateProfile(formData);
-    
-    if (result.success) {
-      setMessage({ type: 'success', text: result.message });
-      setEditing(false);
-    } else {
-      setMessage({ type: 'error', text: result.message });
-    }
-
-    setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-  };
-
-  const loadOrders = async () => {
-    setLoadingOrders(true);
     try {
-      const response = await orderService.getMyOrders();
-      setOrders(response.ordenes);
+      const response = await api.put('/auth/perfil', formData);
+      if (response.data.success) {
+        localStorage.setItem('user', JSON.stringify(response.data.usuario));
+        alert('✅ Perfil actualizado exitosamente');
+        setEditMode(false);
+      }
     } catch (error) {
-      console.error('Error al cargar órdenes:', error);
-    }
-    setLoadingOrders(false);
-  };
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    if (tab === 'ordenes' && orders.length === 0) {
-      loadOrders();
+      console.error('Error al actualizar perfil:', error);
+      alert('❌ Error al actualizar perfil');
     }
   };
 
-  const getEstadoBadge = (estado) => {
-    const badges = {
-      pendiente: { color: '#ffa502', text: 'Pendiente' },
-      confirmado: { color: '#3742fa', text: 'Confirmado' },
-      en_camino: { color: '#5f27cd', text: 'En Camino' },
-      entregado: { color: '#26de81', text: 'Entregado' },
-      cancelado: { color: '#fc5c65', text: 'Cancelado' }
-    };
-    
-    const badge = badges[estado] || badges.pendiente;
-    
-    return (
-      <span 
-        className="estado-badge"
-        style={{ backgroundColor: badge.color }}
-      >
-        {badge.text}
-      </span>
-    );
+  const getEstadoBadgeClass = (estado) => {
+    switch (estado) {
+      case 'pendiente': return 'badge-pendiente';
+      case 'procesando': return 'badge-procesando';
+      case 'enviado': return 'badge-enviado';
+      case 'entregado': return 'badge-entregado';
+      case 'cancelado': return 'badge-cancelado';
+      default: return '';
+    }
   };
 
   return (
-    <div className="profile-overlay" onClick={onClose}>
-      <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="close-profile-btn" onClick={onClose}>✕</button>
-
+    <div className="user-profile">
+      <div className="profile-container">
         <div className="profile-header">
-          <div className="profile-avatar">{user?.avatar}</div>
-          <h2>{user?.nombre} {user?.apellido}</h2>
-          <p className="profile-email">{user?.email}</p>
-          {user?.rol === 'administrador' && (
-            <span className="admin-badge">👑 Administrador</span>
-          )}
+          <div className="profile-avatar">
+            {user?.avatar || '👤'}
+          </div>
+          <div className="profile-info">
+            <h1>{user?.nombre} {user?.apellido}</h1>
+            <p>{user?.email}</p>
+            {user?.rol === 'administrador' && (
+              <span className="admin-badge">🔧 Administrador</span>
+            )}
+          </div>
         </div>
 
         <div className="profile-tabs">
-          <button 
-            className={`tab-btn ${activeTab === 'perfil' ? 'active' : ''}`}
-            onClick={() => handleTabChange('perfil')}
+          <button
+            className={activeTab === 'perfil' ? 'tab-active' : ''}
+            onClick={() => setActiveTab('perfil')}
           >
             👤 Mi Perfil
           </button>
-          <button 
-            className={`tab-btn ${activeTab === 'ordenes' ? 'active' : ''}`}
-            onClick={() => handleTabChange('ordenes')}
+          <button
+            className={activeTab === 'ordenes' ? 'tab-active' : ''}
+            onClick={() => setActiveTab('ordenes')}
           >
             📦 Mis Órdenes
           </button>
@@ -129,170 +115,177 @@ function UserProfile({ onClose }) {
 
         <div className="profile-content">
           {activeTab === 'perfil' && (
-            <div className="profile-tab-content">
-              {message.text && (
-                <div className={`alert ${message.type}`}>
-                  {message.text}
-                </div>
-              )}
-
-              {!editing ? (
-                <div className="profile-info">
-                  <div className="info-group">
-                    <label>Nombre Completo</label>
-                    <p>{user?.nombre} {user?.apellido}</p>
+            <div className="perfil-tab-content">
+              {!editMode ? (
+                <div className="profile-view">
+                  <div className="info-section">
+                    <h3>Información Personal</h3>
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <label>Nombre:</label>
+                        <span>{user?.nombre}</span>
+                      </div>
+                      <div className="info-item">
+                        <label>Apellido:</label>
+                        <span>{user?.apellido}</span>
+                      </div>
+                      <div className="info-item">
+                        <label>Email:</label>
+                        <span>{user?.email}</span>
+                      </div>
+                      <div className="info-item">
+                        <label>Teléfono:</label>
+                        <span>{user?.telefono || 'No registrado'}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="info-group">
-                    <label>Email</label>
-                    <p>{user?.email}</p>
+                  <div className="info-section">
+                    <h3>Dirección</h3>
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <label>Dirección:</label>
+                        <span>{user?.direccion?.direccion || 'No registrada'}</span>
+                      </div>
+                      <div className="info-item">
+                        <label>Ciudad:</label>
+                        <span>{user?.direccion?.ciudad || 'No registrada'}</span>
+                      </div>
+                      <div className="info-item">
+                        <label>Provincia:</label>
+                        <span>{user?.direccion?.provincia || 'No registrada'}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="info-group">
-                    <label>Teléfono</label>
-                    <p>{user?.telefono || 'No registrado'}</p>
-                  </div>
-
-                  <div className="info-group">
-                    <label>Dirección</label>
-                    <p>
-                      {user?.direccion?.calle || 'No registrada'}<br />
-                      {user?.direccion?.ciudad}, {user?.direccion?.provincia}
-                    </p>
-                  </div>
-
-                  <button 
-                    className="edit-profile-btn"
-                    onClick={() => setEditing(true)}
-                  >
+                  <button className="edit-btn" onClick={() => setEditMode(true)}>
                     ✏️ Editar Perfil
                   </button>
                 </div>
               ) : (
-                <form className="profile-edit-form" onSubmit={handleSubmit}>
-                  <div className="form-group">
-                    <label>Nombre</label>
-                    <input
-                      type="text"
-                      name="nombre"
-                      value={formData.nombre}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
+                <div className="profile-edit">
+                  <form onSubmit={handleSubmit} className="profile-edit-form">
+                    <h3>Editar Información</h3>
+                    
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Nombre</label>
+                        <input
+                          type="text"
+                          name="nombre"
+                          value={formData.nombre}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Apellido</label>
+                        <input
+                          type="text"
+                          name="apellido"
+                          value={formData.apellido}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    </div>
 
-                  <div className="form-group">
-                    <label>Apellido</label>
-                    <input
-                      type="text"
-                      name="apellido"
-                      value={formData.apellido}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Teléfono</label>
-                    <input
-                      type="tel"
-                      name="telefono"
-                      value={formData.telefono}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Dirección</label>
-                    <input
-                      type="text"
-                      name="direccion.calle"
-                      value={formData.direccion.calle}
-                      onChange={handleChange}
-                      placeholder="Calle y número"
-                    />
-                  </div>
-
-                  <div className="form-row">
                     <div className="form-group">
-                      <label>Ciudad</label>
+                      <label>Teléfono</label>
                       <input
-                        type="text"
-                        name="direccion.ciudad"
-                        value={formData.direccion.ciudad}
+                        type="tel"
+                        name="telefono"
+                        value={formData.telefono}
                         onChange={handleChange}
                       />
                     </div>
 
+                    <h3>Dirección</h3>
                     <div className="form-group">
-                      <label>Provincia</label>
+                      <label>Dirección</label>
                       <input
                         type="text"
-                        name="direccion.provincia"
-                        value={formData.direccion.provincia}
+                        name="direccion.direccion"
+                        value={formData.direccion.direccion}
                         onChange={handleChange}
                       />
                     </div>
-                  </div>
 
-                  <div className="form-actions">
-                    <button type="submit" className="save-btn">
-                      💾 Guardar Cambios
-                    </button>
-                    <button 
-                      type="button" 
-                      className="cancel-btn"
-                      onClick={() => setEditing(false)}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Ciudad</label>
+                        <input
+                          type="text"
+                          name="direccion.ciudad"
+                          value={formData.direccion.ciudad}
+                          onChange={handleChange}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Provincia</label>
+                        <input
+                          type="text"
+                          name="direccion.provincia"
+                          value={formData.direccion.provincia}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-actions">
+                      <button type="button" className="cancel-btn" onClick={() => setEditMode(false)}>
+                        Cancelar
+                      </button>
+                      <button type="submit" className="save-btn">
+                        Guardar Cambios
+                      </button>
+                    </div>
+                  </form>
+                </div>
               )}
 
-              <button className="logout-btn" onClick={logout}>
+              <button className="logout-btn" onClick={onLogout}>
                 🚪 Cerrar Sesión
               </button>
             </div>
           )}
 
           {activeTab === 'ordenes' && (
-            <div className="orders-tab-content">
-              {loadingOrders ? (
-                <p className="loading-text">Cargando órdenes...</p>
-              ) : orders.length === 0 ? (
-                <div className="empty-orders">
-                  <span className="empty-icon">📦</span>
-                  <p>No tienes órdenes aún</p>
+            <div className="ordenes-tab-content">
+              {loading ? (
+                <div className="loading-text">Cargando órdenes...</div>
+              ) : ordenes.length === 0 ? (
+                <div className="no-ordenes">
+                  <span className="no-ordenes-icon">📦</span>
+                  <p>No tienes órdenes todavía</p>
+                  <button className="btn-shop" onClick={() => onNavigate('home')}>
+                    Ir de Compras
+                  </button>
                 </div>
               ) : (
-                <div className="orders-list">
-                  {orders.map(order => (
-                    <div key={order._id} className="order-card">
-                      <div className="order-header-info">
-                        <h4>Orden #{order.numeroOrden}</h4>
-                        {getEstadoBadge(order.estado)}
+                <div className="ordenes-list">
+                  {ordenes.map(orden => (
+                    <div key={orden._id} className="orden-card">
+                      <div className="orden-header">
+                        <h3>Orden #{orden.numeroOrden}</h3>
+                        <span className={`estado-badge ${getEstadoBadgeClass(orden.estado)}`}>
+                          {orden.estado}
+                        </span>
                       </div>
-                      
-                      <p className="order-date">
-                        📅 {new Date(order.fechaOrden).toLocaleDateString('es-ES', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </p>
-
-                      <div className="order-items">
-                        {order.items.map((item, index) => (
-                          <div key={index} className="order-item-mini">
-                            <span>{item.image}</span>
-                            <span>{item.nombre} x{item.cantidad}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="order-total">
-                        <strong>Total: ${order.total.toFixed(2)}</strong>
+                      <div className="orden-body">
+                        <p><strong>Fecha:</strong> {new Date(orden.createdAt).toLocaleDateString()}</p>
+                        <p><strong>Total:</strong> ${orden.total?.toFixed(2)}</p>
+                        <p><strong>Método de Pago:</strong> {orden.metodoPago}</p>
+                        <div className="orden-items">
+                          <strong>Productos:</strong>
+                          <ul>
+                            {orden.items?.map((item, idx) => (
+                              <li key={idx}>
+                                {item.nombre} - {item.cantidad} {item.unit}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
                     </div>
                   ))}

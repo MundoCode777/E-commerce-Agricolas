@@ -1,90 +1,63 @@
-// src/components/ProductCard.js
-import React, { useState } from 'react';
+// src/components/ProductCard.js - CÓDIGO COMPLETO
+import React from 'react';
 import './ProductCard.css';
 
 function ProductCard({ product, onAddToCart, onViewDetails }) {
-  const [isAdded, setIsAdded] = useState(false);
-
-  const handleAddToCart = () => {
-    onAddToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      unit: product.unit
-    });
-    setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 1000);
-  };
-
-  const handleViewDetails = () => {
-    onViewDetails(product.id);
-  };
-
-  const renderStars = (rating) => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <span key={index} className={index < Math.round(rating) ? 'star-small filled' : 'star-small'}>
-        ★
-      </span>
-    ));
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    onAddToCart(product);
   };
 
   return (
-    <div className="product-card" onClick={handleViewDetails}>
-      <div className="product-image">
-        <span className="product-emoji">{product.image}</span>
-        {product.disponible ? (
-          <span className="product-badge">Fresco</span>
+    <div className="product-card" onClick={() => onViewDetails(product.id)}>
+      <div className="product-card-badge">Fresco</div>
+      
+      <div className="product-card-image">
+        {product.image && product.image.startsWith('/uploads') ? (
+          <img 
+            src={`http://localhost:5000${product.image}`} 
+            alt={product.name}
+          />
         ) : (
-          <span className="product-badge out-of-stock">Agotado</span>
+          <span className="product-emoji">{product.image || '📦'}</span>
         )}
       </div>
-      
-      <div className="product-info">
-        <h3 className="product-name">{product.name}</h3>
-        
-        {product.numeroReviews > 0 && (
-          <div className="product-rating">
-            <div className="stars-container">
-              {renderStars(product.calificacionPromedio)}
-            </div>
-            <span className="rating-text">
-              {product.calificacionPromedio.toFixed(1)} ({product.numeroReviews})
-            </span>
-          </div>
-        )}
-        
-        <p className="product-description">{product.description}</p>
-        
-        <div className="product-footer">
-          <div className="product-price">
-            <span className="price-amount">${product.price.toFixed(2)}</span>
-            <span className="price-unit">/{product.unit}</span>
-          </div>
-          
-          <div className="product-actions-card">
-            <button 
-              className="view-details-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleViewDetails();
-              }}
-            >
-              👁️ Ver
-            </button>
-            
-            {product.disponible && (
-              <button 
-                className={`add-button ${isAdded ? 'added' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddToCart();
-                }}
+
+      <div className="product-card-content">
+        <h3 className="product-card-title">{product.name}</h3>
+        <p className="product-card-description">{product.description}</p>
+
+        <div className="product-card-rating">
+          <div className="stars">
+            {[1, 2, 3, 4, 5].map(star => (
+              <span 
+                key={star} 
+                className={star <= Math.round(product.calificacionPromedio || 0) ? 'star filled' : 'star'}
               >
-                {isAdded ? '✓' : '+'}
-              </button>
-            )}
+                ★
+              </span>
+            ))}
           </div>
+          <span className="rating-text">
+            {(product.calificacionPromedio || 0).toFixed(1)} ({product.numeroReviews || 0})
+          </span>
+        </div>
+
+        <div className="product-card-footer">
+          <div className="product-price">
+            <span className="price-amount">${product.price?.toFixed(2)}</span>
+            <span className="price-unit">/ {product.unit}</span>
+          </div>
+
+          {product.disponible ? (
+            <button className="add-to-cart-btn" onClick={handleAddToCart}>
+              🛒 Agregar
+            </button>
+          ) : (
+            <button className="out-of-stock-btn" disabled>
+              Agotado
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -1,98 +1,47 @@
 // src/components/Checkout.js
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { orderService } from '../services/api';
+import api from '../services/api';
 import './Checkout.css';
 
-function Checkout({ items, total, onClose, onConfirmOrder }) {
-  const { user, isAuthenticated } = useAuth();
-  const [orderNumber, setOrderNumber] = useState('');
+function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
   
   const [formData, setFormData] = useState({
-    nombre: user?.nombre || '',
-    apellido: user?.apellido || '',
-    email: user?.email || '',
+    direccion: user?.direccion?.direccion || '',
+    ciudad: user?.direccion?.ciudad || '',
+    provincia: user?.direccion?.provincia || '',
     telefono: user?.telefono || '',
-    direccion: user?.direccion?.calle || '',
-    ciudad: user?.direccion?.ciudad || 'Milagro',
-    provincia: user?.direccion?.provincia || 'Guayas',
-    codigoPostal: user?.direccion?.codigoPostal || '',
-    notasEntrega: '',
     metodoPago: 'efectivo'
   });
 
-  const [errors, setErrors] = useState({});
-  const [showConfirmation, setShowConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Limpiar error del campo cuando el usuario escribe
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.nombre.trim()) newErrors.nombre = 'El nombre es requerido';
-    if (!formData.apellido.trim()) newErrors.apellido = 'El apellido es requerido';
-    if (!formData.email.trim()) {
-      newErrors.email = 'El email es requerido';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
-    }
-    if (!formData.telefono.trim()) {
-      newErrors.telefono = 'El teléfono es requerido';
-    } else if (!/^\d{10}$/.test(formData.telefono.replace(/\s/g, ''))) {
-      newErrors.telefono = 'Teléfono inválido (10 dígitos)';
-    }
-    if (!formData.direccion.trim()) newErrors.direccion = 'La dirección es requerida';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    // Verificar si el usuario está autenticado
-    if (!isAuthenticated) {
-      alert('Debes iniciar sesión para completar la compra');
-      onClose();
-      return;
-    }
-
     setLoading(true);
+    setError('');
 
     try {
-      // Preparar datos de la orden
       const orderData = {
-        items: items.map(item => ({
-          productoId: item.id,
+        items: cart.map(item => ({
+          producto: item.id,
           nombre: item.name,
-          precio: item.price,
           cantidad: item.quantity,
-          image: item.image
+          precio: item.price,
+          unit: item.unit
         })),
-        subtotal: subtotal,
-        costoEnvio: deliveryCost,
-        total: finalTotal,
+        subtotal: getCartTotal(),
+        costoEnvio: 3.00,
+        total: getCartTotal() + 3.00,
         direccionEntrega: {
-          nombre: formData.nombre,
-          apellido: formData.apellido,
           direccion: formData.direccion,
           ciudad: formData.ciudad,
           provincia: formData.provincia,
@@ -101,74 +50,30 @@ function Checkout({ items, total, onClose, onConfirmOrder }) {
         metodoPago: formData.metodoPago
       };
 
-      // Crear la orden en la base de datos
-      const response = await orderService.createOrder(orderData);
-      
-      if (response.success) {
-        setOrderNumber(response.orden.numeroOrden);
-        setShowConfirmation(true);
-      } else {
-        alert('Error al procesar la orden. Por favor intenta de nuevo.');
+      const response = await api.post('/orders', orderData);
+
+      if (response.data.success) {
+        alert('✅ ¡Orden creada exitosamente! Número de orden: ' + response.data.orden.numeroOrden);
+        clearCart();
+        onNavigate('profile');
       }
-    } catch (error) {
-      console.error('Error al crear orden:', error);
-      if (error.response?.status === 401) {
-        alert('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
-        onClose();
-      } else {
-        alert('Error al procesar la orden. Por favor intenta de nuevo.');
-      }
+    } catch (err) {
+      console.error('Error al crear orden:', err);
+      setError(err.response?.data?.message || 'Error al crear la orden');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleConfirmOrderComplete = () => {
-    onConfirmOrder(formData);
-    onClose();
-  };
-
-  const deliveryCost = 2.50;
-  const subtotal = total;
-  const finalTotal = subtotal + deliveryCost;
-
-  if (showConfirmation) {
+  if (!cart || cart.length === 0) {
     return (
-      <div className="checkout-overlay" onClick={onClose}>
-        <div className="checkout-container confirmation-container" onClick={(e) => e.stopPropagation()}>
-          <div className="confirmation-content">
-            <div className="success-icon">✅</div>
-            <h2>¡Pedido Confirmado!</h2>
-            <p className="confirmation-message">
-              Gracias por tu compra, {formData.nombre}. Tu pedido ha sido procesado exitosamente.
-            </p>
-            
-            <div className="order-summary-box">
-              <h3>Resumen del Pedido</h3>
-              <div className="order-details">
-                <p><strong>Número de Orden:</strong> #{orderNumber}</p>
-                <p><strong>Total:</strong> ${finalTotal.toFixed(2)}</p>
-                <p><strong>Método de Pago:</strong> {
-                  formData.metodoPago === 'efectivo' ? 'Efectivo' : 
-                  formData.metodoPago === 'transferencia' ? 'Transferencia Bancaria' : 
-                  'Tarjeta de Crédito/Débito'
-                }</p>
-                <p><strong>Dirección de Entrega:</strong> {formData.direccion}, {formData.ciudad}</p>
-                <p><strong>Teléfono de Contacto:</strong> {formData.telefono}</p>
-              </div>
-            </div>
-
-            <div className="order-tracking-info">
-              <p>📧 Recibirás un email de confirmación a: <strong>{formData.email}</strong></p>
-              <p>🚚 Entrega estimada: 1-2 días hábiles</p>
-              <p>📱 Te contactaremos al: <strong>{formData.telefono}</strong></p>
-            </div>
-
-            <div className="confirmation-actions">
-              <button className="btn-primary" onClick={handleConfirmOrderComplete}>
-                Continuar Comprando
-              </button>
-            </div>
+      <div className="checkout-page">
+        <div className="container">
+          <div className="checkout-empty">
+            <h2>No hay productos en el carrito</h2>
+            <button className="btn-shop" onClick={() => onNavigate('home')}>
+              Ir de Compras
+            </button>
           </div>
         </div>
       </div>
@@ -176,136 +81,73 @@ function Checkout({ items, total, onClose, onConfirmOrder }) {
   }
 
   return (
-    <div className="checkout-overlay" onClick={onClose}>
-      <div className="checkout-container" onClick={(e) => e.stopPropagation()}>
-        <div className="checkout-header">
-          <h2>🛒 Finalizar Compra</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
-        </div>
+    <div className="checkout-page">
+      <div className="container">
+        <h1 className="checkout-title">💳 Finalizar Compra</h1>
+
+        {error && <div className="error-message">{error}</div>}
 
         <div className="checkout-content">
-          {/* Columna Izquierda - Formulario */}
           <div className="checkout-form-section">
-            <form onSubmit={handleSubmit}>
-              {/* Información Personal */}
+            <form onSubmit={handleSubmit} className="checkout-form">
               <div className="form-section">
-                <h3>📋 Información Personal</h3>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Nombre *</label>
-                    <input
-                      type="text"
-                      name="nombre"
-                      value={formData.nombre}
-                      onChange={handleChange}
-                      className={errors.nombre ? 'error' : ''}
-                      placeholder="Juan"
-                    />
-                    {errors.nombre && <span className="error-message">{errors.nombre}</span>}
-                  </div>
-
-                  <div className="form-group">
-                    <label>Apellido *</label>
-                    <input
-                      type="text"
-                      name="apellido"
-                      value={formData.apellido}
-                      onChange={handleChange}
-                      className={errors.apellido ? 'error' : ''}
-                      placeholder="Pérez"
-                    />
-                    {errors.apellido && <span className="error-message">{errors.apellido}</span>}
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Email *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className={errors.email ? 'error' : ''}
-                      placeholder="ejemplo@correo.com"
-                    />
-                    {errors.email && <span className="error-message">{errors.email}</span>}
-                  </div>
-
-                  <div className="form-group">
-                    <label>Teléfono *</label>
-                    <input
-                      type="tel"
-                      name="telefono"
-                      value={formData.telefono}
-                      onChange={handleChange}
-                      className={errors.telefono ? 'error' : ''}
-                      placeholder="0999999999"
-                    />
-                    {errors.telefono && <span className="error-message">{errors.telefono}</span>}
-                  </div>
-                </div>
-              </div>
-
-              {/* Dirección de Entrega */}
-              <div className="form-section">
-                <h3>📍 Dirección de Entrega</h3>
+                <h2>📍 Dirección de Entrega</h2>
                 
                 <div className="form-group">
-                  <label>Dirección Completa *</label>
+                  <label>Dirección *</label>
                   <input
                     type="text"
                     name="direccion"
                     value={formData.direccion}
                     onChange={handleChange}
-                    className={errors.direccion ? 'error' : ''}
-                    placeholder="Calle, número, referencias"
+                    required
+                    placeholder="Calle, número, sector"
                   />
-                  {errors.direccion && <span className="error-message">{errors.direccion}</span>}
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Ciudad</label>
+                    <label>Ciudad *</label>
                     <input
                       type="text"
                       name="ciudad"
                       value={formData.ciudad}
                       onChange={handleChange}
-                      placeholder="Milagro"
+                      required
+                      placeholder="Ciudad"
                     />
                   </div>
 
                   <div className="form-group">
-                    <label>Provincia</label>
+                    <label>Provincia *</label>
                     <input
                       type="text"
                       name="provincia"
                       value={formData.provincia}
                       onChange={handleChange}
-                      placeholder="Guayas"
+                      required
+                      placeholder="Provincia"
                     />
                   </div>
                 </div>
 
                 <div className="form-group">
-                  <label>Notas de Entrega (Opcional)</label>
-                  <textarea
-                    name="notasEntrega"
-                    value={formData.notasEntrega}
+                  <label>Teléfono de Contacto *</label>
+                  <input
+                    type="tel"
+                    name="telefono"
+                    value={formData.telefono}
                     onChange={handleChange}
-                    placeholder="Ej: Tocar el timbre dos veces, edificio verde..."
-                    rows="3"
-                  ></textarea>
+                    required
+                    placeholder="0999999999"
+                  />
                 </div>
               </div>
 
-              {/* Método de Pago */}
               <div className="form-section">
-                <h3>💳 Método de Pago</h3>
+                <h2>💵 Método de Pago</h2>
                 
-                <div className="payment-methods">
+                <div className="payment-options">
                   <label className="payment-option">
                     <input
                       type="radio"
@@ -314,13 +156,7 @@ function Checkout({ items, total, onClose, onConfirmOrder }) {
                       checked={formData.metodoPago === 'efectivo'}
                       onChange={handleChange}
                     />
-                    <div className="payment-info">
-                      <span className="payment-icon">💵</span>
-                      <div>
-                        <strong>Efectivo</strong>
-                        <p>Paga en efectivo al recibir</p>
-                      </div>
-                    </div>
+                    <span>💵 Efectivo (Pago contra entrega)</span>
                   </label>
 
                   <label className="payment-option">
@@ -331,13 +167,7 @@ function Checkout({ items, total, onClose, onConfirmOrder }) {
                       checked={formData.metodoPago === 'transferencia'}
                       onChange={handleChange}
                     />
-                    <div className="payment-info">
-                      <span className="payment-icon">🏦</span>
-                      <div>
-                        <strong>Transferencia Bancaria</strong>
-                        <p>Realiza una transferencia</p>
-                      </div>
-                    </div>
+                    <span>🏦 Transferencia Bancaria</span>
                   </label>
 
                   <label className="payment-option">
@@ -348,71 +178,57 @@ function Checkout({ items, total, onClose, onConfirmOrder }) {
                       checked={formData.metodoPago === 'tarjeta'}
                       onChange={handleChange}
                     />
-                    <div className="payment-info">
-                      <span className="payment-icon">💳</span>
-                      <div>
-                        <strong>Tarjeta de Crédito/Débito</strong>
-                        <p>Pago con tarjeta</p>
-                      </div>
-                    </div>
+                    <span>💳 Tarjeta de Crédito/Débito</span>
                   </label>
                 </div>
               </div>
 
-              {!isAuthenticated && (
-                <div className="auth-warning">
-                  ⚠️ Debes iniciar sesión para completar la compra
-                </div>
-              )}
-
               <button 
                 type="submit" 
                 className="submit-order-btn"
-                disabled={loading || !isAuthenticated}
+                disabled={loading}
               >
-                {loading ? 'Procesando...' : `Confirmar Pedido - $${finalTotal.toFixed(2)}`}
+                {loading ? 'Procesando...' : '✅ Confirmar Pedido'}
               </button>
             </form>
           </div>
 
-          {/* Columna Derecha - Resumen */}
-          <div className="checkout-summary-section">
-            <div className="summary-box">
-              <h3>Resumen del Pedido</h3>
-              
-              <div className="summary-items">
-                {items.map(item => (
-                  <div key={item.id} className="summary-item">
-                    <span className="item-emoji">{item.image}</span>
-                    <div className="item-info">
-                      <p className="item-name">{item.name}</p>
-                      <p className="item-quantity">Cantidad: {item.quantity}</p>
-                    </div>
-                    <span className="item-price">${(item.price * item.quantity).toFixed(2)}</span>
+          <div className="order-summary">
+            <h2>📦 Resumen del Pedido</h2>
+
+            <div className="summary-items">
+              {cart.map(item => (
+                <div key={item.id} className="summary-item">
+                  <span className="item-emoji">{item.image}</span>
+                  <div className="item-details">
+                    <p className="item-name">{item.name}</p>
+                    <p className="item-qty">{item.quantity} {item.unit}</p>
                   </div>
-                ))}
+                  <span className="item-price">${(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="summary-totals">
+              <div className="summary-row">
+                <span>Subtotal:</span>
+                <span>${getCartTotal().toFixed(2)}</span>
               </div>
 
-              <div className="summary-totals">
-                <div className="total-row">
-                  <span>Subtotal:</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="total-row">
-                  <span>Envío:</span>
-                  <span>${deliveryCost.toFixed(2)}</span>
-                </div>
-                <div className="total-row final-total">
-                  <span>Total:</span>
-                  <span>${finalTotal.toFixed(2)}</span>
-                </div>
+              <div className="summary-row">
+                <span>Envío:</span>
+                <span>$3.00</span>
               </div>
 
-              <div className="delivery-info">
-                <p>🚚 Entrega estimada: 1-2 días hábiles</p>
-                <p>✅ Productos 100% frescos garantizados</p>
-                <p>📦 Seguimiento de pedido en tiempo real</p>
+              <div className="summary-row total">
+                <span>Total a Pagar:</span>
+                <span>${(getCartTotal() + 3.00).toFixed(2)}</span>
               </div>
+            </div>
+
+            <div className="delivery-info">
+              <p>🚚 Entrega en 24-48 horas</p>
+              <p>📞 Te contactaremos para confirmar</p>
             </div>
           </div>
         </div>

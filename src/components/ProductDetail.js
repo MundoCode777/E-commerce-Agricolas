@@ -1,74 +1,73 @@
-// src/components/ProductDetail.js
+// src/components/ProductDetail.js - SIN INFORMACIÓN NUTRICIONAL
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { productService } from '../services/productService';
 import './ProductDetail.css';
 
 function ProductDetail({ productId, onClose, onAddToCart }) {
-  const { user, isAuthenticated } = useAuth();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('descripcion');
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewData, setReviewData] = useState({
-    calificacion: 5,
-    comentario: ''
-  });
   const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState('descripcion');
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [reviewForm, setReviewForm] = useState({ calificacion: 5, comentario: '' });
+  const [submittingReview, setSubmittingReview] = useState(false);
 
-  // ✅ Arreglar el useEffect (solo depende de productId)
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAuthenticated = !!localStorage.getItem('token');
+
   useEffect(() => {
-    const loadProduct = async () => {
-      setLoading(true);
-      try {
-        const response = await productService.getProductById(productId);
-        setProduct(response.product);
-      } catch (error) {
-        console.error('Error al cargar producto:', error);
-        setMessage({ type: 'error', text: 'Error al cargar el producto' });
-      }
-      setLoading(false);
-    };
-
-    if (productId) loadProduct();
+    loadProduct();
   }, [productId]);
 
-  // ✅ Recargar producto para usar en submit/delete review
-  const reloadProduct = async () => {
-    setLoading(true);
+  const loadProduct = async () => {
     try {
       const response = await productService.getProductById(productId);
       setProduct(response.product);
     } catch (error) {
       console.error('Error al cargar producto:', error);
       setMessage({ type: 'error', text: 'Error al cargar el producto' });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleAddToCart = () => {
+    if (product) {
+      onAddToCart({
+        id: product._id,
+        name: product.nombre,
+        price: product.precio,
+        image: product.image,
+        unit: product.unit
+      }, quantity);
+      
+      setMessage({ type: 'success', text: '✅ Producto agregado al carrito' });
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+    }
   };
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-
+    
     if (!isAuthenticated) {
       setMessage({ type: 'error', text: 'Debes iniciar sesión para dejar una reseña' });
       return;
     }
 
+    setSubmittingReview(true);
     try {
-      await productService.addReview(productId, reviewData);
-      setMessage({ type: 'success', text: 'Reseña agregada exitosamente' });
-      setShowReviewForm(false);
-      setReviewData({ calificacion: 5, comentario: '' });
-      reloadProduct(); // ✅ Usar reloadProduct
+      await productService.addReview(productId, reviewForm);
+      setMessage({ type: 'success', text: '✅ Reseña agregada exitosamente' });
+      setReviewForm({ calificacion: 5, comentario: '' });
+      loadProduct();
     } catch (error) {
-      setMessage({
-        type: 'error',
-        text: error.response?.data?.message || 'Error al agregar reseña'
+      setMessage({ 
+        type: 'error', 
+        text: error.response?.data?.message || 'Error al agregar reseña' 
       });
+    } finally {
+      setSubmittingReview(false);
     }
-
-    setTimeout(() => setMessage({ type: '', text: '' }), 3000);
   };
 
   const handleDeleteReview = async (reviewId) => {
@@ -76,34 +75,16 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
 
     try {
       await productService.deleteReview(productId, reviewId);
-      setMessage({ type: 'success', text: 'Reseña eliminada' });
-      reloadProduct(); // ✅ Usar reloadProduct
+      setMessage({ type: 'success', text: '✅ Reseña eliminada' });
+      loadProduct();
     } catch (error) {
       setMessage({ type: 'error', text: 'Error al eliminar reseña' });
-    }
-
-    setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-  };
-
-  const handleAddToCart = () => {
-    if (product) {
-      for (let i = 0; i < quantity; i++) {
-        onAddToCart({
-          id: product._id,
-          name: product.nombre,
-          price: product.precio,
-          image: product.image,
-          unit: product.unit
-        });
-      }
-      setMessage({ type: 'success', text: `${quantity} producto(s) agregado(s) al carrito` });
-      setTimeout(() => setMessage({ type: '', text: '' }), 2000);
     }
   };
 
   const renderStars = (rating) => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <span key={index} className={index < rating ? 'star filled' : 'star'}>
+    return [1, 2, 3, 4, 5].map(star => (
+      <span key={star} className={star <= rating ? 'star filled' : 'star'}>
         ★
       </span>
     ));
@@ -133,10 +114,18 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
         )}
 
         <div className="product-detail-content">
-          {/* Columna Izquierda - Imagen y galería */}
+          {/* Columna Izquierda - Imagen */}
           <div className="product-detail-left">
             <div className="product-main-image">
-              <span className="product-large-emoji">{product.image}</span>
+              {product.image && product.image.startsWith('/uploads') ? (
+                <img 
+                  src={`http://localhost:5000${product.image}`} 
+                  alt={product.nombre}
+                  className="product-main-img"
+                />
+              ) : (
+                <span className="product-large-emoji">{product.image}</span>
+              )}
               {!product.disponible && (
                 <div className="out-of-stock-badge">Agotado</div>
               )}
@@ -145,7 +134,14 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
             <div className="product-thumbnails">
               {product.imagenes?.map((img, index) => (
                 <div key={index} className="thumbnail">
-                  <span>{img}</span>
+                  {img && img.startsWith('/uploads') ? (
+                    <img 
+                      src={`http://localhost:5000${img}`} 
+                      alt={`${product.nombre} ${index + 1}`}
+                    />
+                  ) : (
+                    <span>{img}</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -207,7 +203,7 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
 
             {product.beneficios && product.beneficios.length > 0 && (
               <div className="product-benefits">
-                <h3>✨ Beneficios</h3>
+                <h3>✨ Características</h3>
                 <ul>
                   {product.beneficios.map((beneficio, index) => (
                     <li key={index}>{beneficio}</li>
@@ -228,12 +224,6 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
               📝 Descripción
             </button>
             <button
-              className={activeTab === 'nutricion' ? 'tab-active' : ''}
-              onClick={() => setActiveTab('nutricion')}
-            >
-              🥗 Información Nutricional
-            </button>
-            <button
               className={activeTab === 'reviews' ? 'tab-active' : ''}
               onClick={() => setActiveTab('reviews')}
             >
@@ -243,147 +233,70 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
 
           <div className="tabs-content">
             {activeTab === 'descripcion' && (
-              <div className="tab-panel">
-                <h3>Descripción Detallada</h3>
+              <div className="tab-pane">
                 <p>{product.descripcionLarga || product.descripcion}</p>
               </div>
             )}
 
-            {activeTab === 'nutricion' && (
-              <div className="tab-panel">
-                <h3>Información Nutricional</h3>
-                {product.informacionNutricional ? (
-                  <div className="nutrition-info">
-                    <div className="nutrition-item">
-                      <strong>Calorías:</strong> {product.informacionNutricional.calorias}
-                    </div>
-                    <div className="nutrition-item">
-                      <strong>Proteínas:</strong> {product.informacionNutricional.proteinas}
-                    </div>
-                    <div className="nutrition-item">
-                      <strong>Carbohidratos:</strong> {product.informacionNutricional.carbohidratos}
-                    </div>
-                    <div className="nutrition-item">
-                      <strong>Grasas:</strong> {product.informacionNutricional.grasas}
-                    </div>
-                    <div className="nutrition-item">
-                      <strong>Fibra:</strong> {product.informacionNutricional.fibra}
-                    </div>
-                    {product.informacionNutricional.vitaminas && (
-                      <div className="nutrition-item vitamins">
-                        <strong>Vitaminas:</strong>
-                        <div className="vitamin-list">
-                          {product.informacionNutricional.vitaminas.map((vit, index) => (
-                            <span key={index} className="vitamin-badge">{vit}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p>Información nutricional no disponible</p>
-                )}
-              </div>
-            )}
-
             {activeTab === 'reviews' && (
-              <div className="tab-panel reviews-panel">
-                <div className="reviews-header">
-                  <h3>Reseñas de Clientes</h3>
-                  {isAuthenticated && !showReviewForm && (
-                    <button
-                      className="btn-add-review"
-                      onClick={() => setShowReviewForm(true)}
-                    >
-                      ✍️ Escribir Reseña
-                    </button>
-                  )}
-                </div>
-
-                {showReviewForm && (
+              <div className="tab-pane">
+                {isAuthenticated && (
                   <form className="review-form" onSubmit={handleReviewSubmit}>
-                    <h4>Deja tu opinión</h4>
-
-                    <div className="form-group">
+                    <h3>Deja tu Reseña</h3>
+                    <div className="rating-input">
                       <label>Calificación:</label>
-                      <div className="star-rating-input">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <span
-                            key={star}
-                            className={star <= reviewData.calificacion ? 'star-input filled' : 'star-input'}
-                            onClick={() => setReviewData({ ...reviewData, calificacion: star })}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Comentario:</label>
-                      <textarea
-                        value={reviewData.comentario}
-                        onChange={(e) => setReviewData({ ...reviewData, comentario: e.target.value })}
-                        placeholder="Cuéntanos tu experiencia con este producto..."
-                        required
-                        rows="4"
-                      />
-                    </div>
-
-                    <div className="form-actions">
-                      <button type="submit" className="btn-submit-review">
-                        Publicar Reseña
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-cancel-review"
-                        onClick={() => setShowReviewForm(false)}
+                      <select 
+                        value={reviewForm.calificacion}
+                        onChange={(e) => setReviewForm({...reviewForm, calificacion: Number(e.target.value)})}
                       >
-                        Cancelar
-                      </button>
+                        <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+                        <option value="4">⭐⭐⭐⭐ Muy Bueno</option>
+                        <option value="3">⭐⭐⭐ Bueno</option>
+                        <option value="2">⭐⭐ Regular</option>
+                        <option value="1">⭐ Malo</option>
+                      </select>
                     </div>
+                    <textarea
+                      placeholder="Escribe tu opinión sobre este producto..."
+                      value={reviewForm.comentario}
+                      onChange={(e) => setReviewForm({...reviewForm, comentario: e.target.value})}
+                      required
+                    />
+                    <button type="submit" disabled={submittingReview}>
+                      {submittingReview ? 'Enviando...' : 'Publicar Reseña'}
+                    </button>
                   </form>
                 )}
 
                 <div className="reviews-list">
                   {product.reviews && product.reviews.length > 0 ? (
                     product.reviews.map((review) => (
-                      <div key={review._id} className="review-card">
-                        <div className="review-header-card">
-                          <div className="reviewer-info">
-                            <span className="reviewer-avatar">{review.avatarUsuario}</span>
-                            <div>
-                              <strong>{review.nombreUsuario}</strong>
-                              <div className="review-stars">
-                                {renderStars(review.calificacion)}
-                              </div>
-                            </div>
+                      <div key={review._id} className="review-item">
+                        <div className="review-header">
+                          <div className="review-author">
+                            <span className="author-avatar">{review.avatarUsuario || '👤'}</span>
+                            <strong>{review.nombreUsuario}</strong>
                           </div>
-
-                          <div className="review-meta">
-                            <span className="review-date">
-                              {new Date(review.fecha).toLocaleDateString('es-ES')}
-                            </span>
-
-                            {/* ✅ Si tu user viene como _id, esto evita fallos */}
-                            {user && review.usuario === (user.id || user._id) && (
-                              <button
-                                className="btn-delete-review"
-                                onClick={() => handleDeleteReview(review._id)}
-                              >
-                                🗑️
-                              </button>
-                            )}
+                          <div className="review-rating">
+                            {renderStars(review.calificacion)}
                           </div>
                         </div>
                         <p className="review-comment">{review.comentario}</p>
+                        <span className="review-date">
+                          {new Date(review.fecha).toLocaleDateString()}
+                        </span>
+                        {isAuthenticated && review.usuario === user.id && (
+                          <button 
+                            className="delete-review-btn"
+                            onClick={() => handleDeleteReview(review._id)}
+                          >
+                            🗑️ Eliminar
+                          </button>
+                        )}
                       </div>
                     ))
                   ) : (
-                    <div className="no-reviews">
-                      <p>Aún no hay reseñas para este producto</p>
-                      <p>¡Sé el primero en dejarnos tu opinión!</p>
-                    </div>
+                    <p className="no-reviews">No hay reseñas todavía. ¡Sé el primero en dejar una!</p>
                   )}
                 </div>
               </div>

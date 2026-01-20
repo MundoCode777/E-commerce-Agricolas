@@ -59,7 +59,7 @@ const productSchema = new mongoose.Schema({
   },
   categoria: {
     type: String,
-    enum: ['verduras', 'frutas', 'tuberculos', 'granos', 'otros'],
+    enum: ['verduras', 'frutas', 'tuberculos', 'granos', 'agroquimicos', 'fertilizantes', 'semillas', 'herramientas', 'otros'],
     default: 'verduras'
   },
   stock: {
@@ -79,6 +79,8 @@ const productSchema = new mongoose.Schema({
     default: 0
   },
   reviews: [reviewSchema],
+  
+  // Para productos alimenticios
   beneficios: [{
     type: String
   }],
@@ -89,6 +91,29 @@ const productSchema = new mongoose.Schema({
     grasas: String,
     fibra: String,
     vitaminas: [String]
+  },
+  
+  // Para agroquímicos y productos especiales
+  informacionUso: {
+    tipo: String,
+    aplicacion: String,
+    dosis: String,
+    advertencia: String
+  },
+  informacionSeguridad: {
+    precauciones: [String],
+    simbolos: [String],
+    clasificacion: String,
+    restricciones: String
+  },
+  
+  // Campos adicionales
+  marca: String,
+  origen: String,
+  certificaciones: [String],
+  esAgroquimico: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

@@ -2,17 +2,14 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const connectDB = require('./config/db');
 
-// Cargar variables de entorno
 dotenv.config();
-
-// Conectar a la base de datos
 connectDB();
 
 const app = express();
 
-// Middleware
 app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true
@@ -21,18 +18,18 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Log de todas las peticiones
+// Servir archivos estáticos (imágenes)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
 
-// Rutas
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/products', require('./routes/products'));
 
-// Ruta de prueba
 app.get('/', (req, res) => {
   res.json({ 
     message: '🌾 API Agrícola Fresh funcionando correctamente',
@@ -46,28 +43,24 @@ app.get('/', (req, res) => {
       products: {
         getAll: 'GET /api/products',
         getOne: 'GET /api/products/:id',
+        create: 'POST /api/products (admin)',
+        update: 'PUT /api/products/:id (admin)',
+        delete: 'DELETE /api/products/:id (admin)',
+        uploadImage: 'POST /api/products/upload-image (admin)',
         addReview: 'POST /api/products/:id/reviews',
         deleteReview: 'DELETE /api/products/:id/reviews/:reviewId'
       },
       orders: {
         create: 'POST /api/orders',
         getMyOrders: 'GET /api/orders/mis-ordenes',
-        getOne: 'GET /api/orders/:id'
+        getOne: 'GET /api/orders/:id',
+        getAll: 'GET /api/orders (admin)',
+        updateStatus: 'PUT /api/orders/:id/estado (admin)'
       }
     }
   });
 });
 
-// Ruta de test
-app.get('/api/test', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Backend funcionando correctamente',
-    timestamp: new Date()
-  });
-});
-
-// Manejo de errores
 app.use((err, req, res, next) => {
   console.error('Error capturado:', err);
   res.status(500).json({
