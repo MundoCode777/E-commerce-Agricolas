@@ -1,54 +1,50 @@
-// src/components/About.js
+// src/components/About.js - CÓDIGO COMPLETO
 import React from 'react';
 import './About.css';
 
 function About() {
   return (
-    <section className="about-section" id="nosotros">
+    <section className="about" id="nosotros">
       <div className="container">
-        <h2 className="about-title">Sobre Nosotros 🌾</h2>
-        
+        <h2 className="section-title">Sobre Nosotros</h2>
         <div className="about-content">
           <div className="about-text">
-            <h3>Nuestra Historia</h3>
+            <h3>🌿 Líderes en Insumos Agrícolas</h3>
             <p>
-              Agrícola Fresh nació en Milagro, Guayas, con la misión de conectar 
-              directamente a los agricultores locales con las familias ecuatorianas. 
-              Creemos en productos frescos, orgánicos y de la más alta calidad.
+              En Agrícola Fresh somos especialistas en la distribución de insumos agrícolas 
+              de la más alta calidad. Con años de experiencia en el sector, ofrecemos 
+              fertilizantes, herramientas, semillas y todo lo necesario para mejorar tu producción.
+            </p>
+            <p>
+              Nuestro compromiso es brindar productos certificados que cumplan con los más 
+              altos estándares de calidad, acompañados de asesoría técnica personalizada 
+              para optimizar tus cultivos.
             </p>
             
-            <h3>Nuestros Valores</h3>
-            <div className="values-grid">
-              <div className="value-card">
-                <span className="value-icon">🌱</span>
-                <h4>100% Orgánico</h4>
-                <p>Sin pesticidas ni químicos dañinos</p>
+            <div className="about-values">
+              <div className="value-item">
+                <h4>🎯 Nuestra Misión</h4>
+                <p>Proveer insumos agrícolas de calidad que impulsen la productividad del campo ecuatoriano.</p>
               </div>
-              
-              <div className="value-card">
-                <span className="value-icon">🚜</span>
-                <h4>Directo del Campo</h4>
-                <p>Cosechado el mismo día de la entrega</p>
-              </div>
-              
-              <div className="value-card">
-                <span className="value-icon">✅</span>
-                <h4>Calidad Garantizada</h4>
-                <p>Productos seleccionados cuidadosamente</p>
-              </div>
-              
-              <div className="value-card">
-                <span className="value-icon">🤝</span>
-                <h4>Apoyo Local</h4>
-                <p>Trabajamos con agricultores de la zona</p>
+              <div className="value-item">
+                <h4>👁️ Nuestra Visión</h4>
+                <p>Ser la empresa líder en distribución de insumos agrícolas en la región costa.</p>
               </div>
             </div>
           </div>
-          
-          <div className="about-image">
-            <div className="image-placeholder">
-              <span className="big-emoji">🌾🥕🍅</span>
-              <p>Productos frescos todos los días</p>
+
+          <div className="about-stats">
+            <div className="stat-card">
+              <div className="stat-number">500+</div>
+              <div className="stat-label">Agricultores Satisfechos</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-number">200+</div>
+              <div className="stat-label">Productos Disponibles</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-number">100%</div>
+              <div className="stat-label">Productos Certificados</div>
             </div>
           </div>
         </div>

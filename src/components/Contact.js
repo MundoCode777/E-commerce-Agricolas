@@ -1,4 +1,4 @@
-// src/components/Contact.js
+// src/components/Contact.js - CÓDIGO COMPLETO
 import React, { useState } from 'react';
 import './Contact.css';
 
@@ -6,127 +6,118 @@ function Contact() {
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
+    telefono: '',
     mensaje: ''
   });
 
-  const [submitted, setSubmitted] = useState(false);
-
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    
-    // Aquí podrías enviar el formulario a un servidor
-    console.log('Formulario enviado:', formData);
-    
-    // Limpiar formulario después de 3 segundos
-    setTimeout(() => {
-      setFormData({ nombre: '', email: '', mensaje: '' });
-      setSubmitted(false);
-    }, 3000);
+    alert('¡Gracias por contactarnos! Nos comunicaremos contigo pronto.');
+    setFormData({ nombre: '', email: '', telefono: '', mensaje: '' });
   };
 
   return (
-    <section className="contact-section" id="contacto">
+    <section className="contact" id="contacto">
       <div className="container">
-        <h2 className="contact-title">Contáctanos 📧</h2>
-        <p className="contact-subtitle">
-          ¿Tienes alguna pregunta? ¡Estamos aquí para ayudarte!
-        </p>
-
+        <h2 className="section-title">Contáctanos</h2>
+        <p className="section-subtitle">¿Tienes dudas sobre nuestros insumos? Estamos para ayudarte</p>
+        
         <div className="contact-content">
-          {/* Información de Contacto */}
           <div className="contact-info">
-            <div className="info-card">
-              <span className="info-icon">📍</span>
-              <h3>Ubicación</h3>
-              <p>Milagro, Guayas, Ecuador</p>
+            <h3>Información de Contacto</h3>
+            
+            <div className="contact-item">
+              <span className="contact-icon">📍</span>
+              <div>
+                <h4>Dirección</h4>
+                <p>Milagro, Guayas, Ecuador</p>
+              </div>
             </div>
 
-            <div className="info-card">
-              <span className="info-icon">📞</span>
-              <h3>Teléfono</h3>
-              <p>+593 999 999 999</p>
-              <p>Lun - Vie: 8:00 - 18:00</p>
+            <div className="contact-item">
+              <span className="contact-icon">📞</span>
+              <div>
+                <h4>Teléfono</h4>
+                <p>+593 937 837 9332</p>
+              </div>
             </div>
 
-            <div className="info-card">
-              <span className="info-icon">📧</span>
-              <h3>Email</h3>
-              <p>info@agricolafresh.com</p>
-              <p>ventas@agricolafresh.com</p>
+            <div className="contact-item">
+              <span className="contact-icon">📧</span>
+              <div>
+                <h4>Email</h4>
+                <p>ventas@agricolafresh.com</p>
+              </div>
             </div>
 
-            <div className="info-card">
-              <span className="info-icon">💬</span>
-              <h3>Redes Sociales</h3>
-              <div className="social-links-contact">
-                <a href="#facebook">Facebook</a>
-                <a href="#instagram">Instagram</a>
-                <a href="#whatsapp">WhatsApp</a>
+            <div className="contact-item">
+              <span className="contact-icon">⏰</span>
+              <div>
+                <h4>Horario de Atención</h4>
+                <p>Lunes - Viernes: 8:00 - 18:00</p>
+                <p>Sábado: 8:00 - 14:00</p>
               </div>
             </div>
           </div>
 
-          {/* Formulario de Contacto */}
-          <div className="contact-form-container">
-            {submitted ? (
-              <div className="success-message">
-                <span className="success-icon">✅</span>
-                <h3>¡Mensaje Enviado!</h3>
-                <p>Gracias por contactarnos. Te responderemos pronto.</p>
-              </div>
-            ) : (
-              <form className="contact-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label>Nombre Completo *</label>
-                  <input
-                    type="text"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    required
-                    placeholder="Tu nombre"
-                  />
-                </div>
+          <form className="contact-form" onSubmit={handleSubmit}>
+            <h3>Envíanos un Mensaje</h3>
+            
+            <div className="form-group">
+              <input
+                type="text"
+                name="nombre"
+                placeholder="Tu Nombre"
+                value={formData.nombre}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-                <div className="form-group">
-                  <label>Email *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    placeholder="tu@email.com"
-                  />
-                </div>
+            <div className="form-group">
+              <input
+                type="email"
+                name="email"
+                placeholder="Tu Email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-                <div className="form-group">
-                  <label>Mensaje *</label>
-                  <textarea
-                    name="mensaje"
-                    value={formData.mensaje}
-                    onChange={handleChange}
-                    required
-                    rows="5"
-                    placeholder="Escribe tu mensaje aquí..."
-                  ></textarea>
-                </div>
+            <div className="form-group">
+              <input
+                type="tel"
+                name="telefono"
+                placeholder="Tu Teléfono"
+                value={formData.telefono}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-                <button type="submit" className="submit-btn">
-                  Enviar Mensaje 📨
-                </button>
-              </form>
-            )}
-          </div>
+            <div className="form-group">
+              <textarea
+                name="mensaje"
+                placeholder="¿En qué podemos ayudarte?"
+                value={formData.mensaje}
+                onChange={handleChange}
+                rows="5"
+                required
+              />
+            </div>
+
+            <button type="submit" className="submit-button">
+              Enviar Mensaje
+            </button>
+          </form>
         </div>
       </div>
     </section>

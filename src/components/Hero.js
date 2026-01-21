@@ -1,28 +1,36 @@
-// src/components/Hero.js
+// src/components/Hero.js - CÓDIGO COMPLETO
 import React from 'react';
 import './Hero.css';
 
 function Hero() {
-  const scrollToProducts = () => {
-    const element = document.getElementById('productos');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
   return (
-    <section className="hero" id="inicio">
-      <div className="hero-overlay"></div>
-      <div className="container hero-content">
-        <h1 className="hero-title fade-in">
-          Productos Frescos del Campo 🌱
-        </h1>
-        <p className="hero-subtitle fade-in">
-          Directo de la granja a tu mesa. Calidad garantizada y 100% orgánico
-        </p>
-        <button className="hero-button fade-in" onClick={scrollToProducts}>
-          Ver Productos
-        </button>
+    <section className="hero">
+      <div className="hero-overlay">
+        <div className="container hero-content">
+          <h1 className="hero-title">🌾 Insumos Agrícolas de Calidad</h1>
+          <p className="hero-subtitle">
+            Fertilizantes, herramientas y equipos para potenciar tu producción agrícola
+          </p>
+          <div className="hero-features">
+            <div className="feature">
+              <span className="feature-icon">✓</span>
+              <span>Productos certificados</span>
+            </div>
+            <div className="feature">
+              <span className="feature-icon">✓</span>
+              <span>Entrega rápida</span>
+            </div>
+            <div className="feature">
+              <span className="feature-icon">✓</span>
+              <span>Asesoría técnica</span>
+            </div>
+          </div>
+          <button className="hero-button" onClick={() => {
+            document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' });
+          }}>
+            Ver Productos
+          </button>
+        </div>
       </div>
     </section>
   );

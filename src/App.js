@@ -1,4 +1,4 @@
-// src/App.js - CÓDIGO COMPLETO CON CARRITO POR USUARIO
+// src/App.js - CÓDIGO COMPLETO CON TESTIMONIOS
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -10,6 +10,7 @@ import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import UserProfile from './components/UserProfile';
 import ProductList from './components/ProductList';
+import Testimonials from './components/Testimonials';
 import './App.css';
 
 function App() {
@@ -186,13 +187,14 @@ function App() {
             <Hero />
             <section className="products-section" id="productos">
               <div className="container">
-                <h2 className="section-title">Nuestros Productos Frescos</h2>
+                <h2 className="section-title">Nuestros Insumos Agrícolas</h2>
                 <p className="section-subtitle">
-                  Productos 100% orgánicos cosechados del día
+                  Fertilizantes, herramientas y equipos de calidad certificada
                 </p>
                 <ProductList onAddToCart={addToCart} />
               </div>
             </section>
+            <Testimonials />
             <About />
             <Contact />
           </>
@@ -239,13 +241,14 @@ function App() {
             <Hero />
             <section className="products-section" id="productos">
               <div className="container">
-                <h2 className="section-title">Nuestros Productos Frescos</h2>
+                <h2 className="section-title">Nuestros Insumos Agrícolas</h2>
                 <p className="section-subtitle">
-                  Productos 100% orgánicos cosechados del día
+                  Fertilizantes, herramientas y equipos de calidad certificada
                 </p>
                 <ProductList onAddToCart={addToCart} />
               </div>
             </section>
+            <Testimonials />
             <About />
             <Contact />
           </>

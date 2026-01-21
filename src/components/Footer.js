@@ -1,4 +1,4 @@
-// src/components/Footer.js
+// src/components/Footer.js - CÓDIGO COMPLETO
 import React from 'react';
 import './Footer.css';
 
@@ -8,13 +8,13 @@ function Footer() {
       <div className="container footer-content">
         <div className="footer-section">
           <h3>🌾 Agrícola Fresh</h3>
-          <p>Productos frescos y orgánicos directo del campo a tu mesa</p>
+          <p>Insumos agrícolas de calidad para mejorar tu producción</p>
         </div>
 
         <div className="footer-section">
           <h4>Contacto</h4>
           <p>📞 +593 937 837 9332</p>
-          <p>📧 info@agricolafresh.com</p>
+          <p>📧 ventas@agricolafresh.com</p>
           <p>📍 Milagro, Guayas, Ecuador</p>
         </div>
 
