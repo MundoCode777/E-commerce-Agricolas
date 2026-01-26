@@ -1,4 +1,4 @@
-// backend/models/Product.js
+// backend/models/Product.js - CÓDIGO COMPLETO CORREGIDO
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
@@ -59,8 +59,20 @@ const productSchema = new mongoose.Schema({
   },
   categoria: {
     type: String,
-    enum: ['verduras', 'frutas', 'tuberculos', 'granos', 'agroquimicos', 'fertilizantes', 'semillas', 'herramientas', 'otros'],
-    default: 'verduras'
+    enum: [
+      'fertilizantes',
+      'abonos',
+      'pesticidas',
+      'herbicidas',
+      'fungicidas',
+      'insecticidas',
+      'semillas',
+      'herramientas',
+      'equipos',
+      'sustratos',
+      'otros'
+    ],
+    default: 'fertilizantes'
   },
   stock: {
     type: Number,
@@ -80,10 +92,12 @@ const productSchema = new mongoose.Schema({
   },
   reviews: [reviewSchema],
   
-  // Para productos alimenticios
+  // Beneficios y características
   beneficios: [{
     type: String
   }],
+  
+  // Información nutricional (si aplica)
   informacionNutricional: {
     calorias: String,
     proteinas: String,
