@@ -1,6 +1,7 @@
-// src/pages/AdminDashboard.js - CÓDIGO COMPLETO CON FIX DE IMÁGENES
+// src/pages/AdminDashboard.js - CÓDIGO COMPLETO CON ANÁLISIS DE SENTIMIENTOS
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import SentimentDashboard from '../components/SentimentDashboard';
 import './AdminDashboard.css';
 
 function AdminDashboard() {
@@ -33,7 +34,7 @@ function AdminDashboard() {
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      if (activeTab === 'productos') {
+      if (activeTab === 'productos' || activeTab === 'sentimientos') {
         const response = await api.get('/products');
         setProductos(response.data.products || []);
       } else if (activeTab === 'ordenes') {
@@ -129,7 +130,6 @@ function AdminDashboard() {
       ...prev,
       image: ''
     }));
-    // Limpiar el input file
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) fileInput.value = '';
   };
@@ -149,7 +149,6 @@ function AdminDashboard() {
       beneficios: ['', '', '', '']
     });
     setShowModal(true);
-    // Limpiar input file
     setTimeout(() => {
       const fileInput = document.querySelector('input[type="file"]');
       if (fileInput) fileInput.value = '';
@@ -158,7 +157,7 @@ function AdminDashboard() {
 
   const abrirModalEditar = (producto) => {
     setEditingProduct(producto);
-    setImagePreview(''); // Limpiar preview anterior
+    setImagePreview('');
     setFormData({
       nombre: producto.nombre,
       descripcion: producto.descripcion,
@@ -172,7 +171,6 @@ function AdminDashboard() {
     });
     setShowModal(true);
     
-    // Limpiar el input file
     setTimeout(() => {
       const fileInput = document.querySelector('input[type="file"]');
       if (fileInput) fileInput.value = '';
@@ -240,7 +238,6 @@ function AdminDashboard() {
     setShowModal(false);
     setImagePreview('');
     setEditingProduct(null);
-    // Limpiar input file
     setTimeout(() => {
       const fileInput = document.querySelector('input[type="file"]');
       if (fileInput) fileInput.value = '';
@@ -269,6 +266,12 @@ function AdminDashboard() {
             onClick={() => setActiveTab('ordenes')}
           >
             📋 Órdenes
+          </button>
+          <button
+            className={activeTab === 'sentimientos' ? 'active' : ''}
+            onClick={() => setActiveTab('sentimientos')}
+          >
+            🤖 Análisis de Sentimientos
           </button>
         </div>
       </div>
@@ -303,6 +306,27 @@ function AdminDashboard() {
                         <span className="precio">${producto.precio}</span>
                         <span className="stock">Stock: {producto.stock}</span>
                       </div>
+                      
+                      {/* NUEVO: Indicador de sentimientos */}
+                      {producto.numeroReviews > 0 && producto.estadisticasSentimientos && (
+                        <div className="producto-sentiment-mini">
+                          <span className="reviews-count">
+                            ⭐ {producto.calificacionPromedio.toFixed(1)} ({producto.numeroReviews})
+                          </span>
+                          {parseFloat(producto.estadisticasSentimientos.porcentajes?.muyNegativo || 0) + 
+                           parseFloat(producto.estadisticasSentimientos.porcentajes?.negativo || 0) > 30 && (
+                            <span className="alert-indicator" title="Alto porcentaje de reseñas negativas">
+                              ⚠️
+                            </span>
+                          )}
+                          {producto.estadisticasSentimientos.sarcasmoDetectado > 0 && (
+                            <span className="sarcasm-indicator" title={`${producto.estadisticasSentimientos.sarcasmoDetectado} sarcasmo(s) detectado(s)`}>
+                              🎭
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
                       <div className="producto-actions">
                         <button 
                           className="btn-edit"
@@ -345,6 +369,7 @@ function AdminDashboard() {
                       <p><strong>Total:</strong> ${orden.total?.toFixed(2)}</p>
                       <p><strong>Fecha:</strong> {new Date(orden.createdAt).toLocaleDateString()}</p>
                       <p><strong>Dirección:</strong> {orden.direccionEntrega?.direccion}</p>
+                      <p><strong>Método de Pago:</strong> {orden.metodoPago}</p>
                       
                       <div className="orden-items">
                         <strong>Productos:</strong>
@@ -374,6 +399,17 @@ function AdminDashboard() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        )}
+
+        {/* NUEVA SECCIÓN: Dashboard de Sentimientos */}
+        {activeTab === 'sentimientos' && (
+          <div className="sentimientos-section">
+            {loading ? (
+              <div className="loading">Cargando análisis de sentimientos...</div>
+            ) : (
+              <SentimentDashboard products={productos} />
             )}
           </div>
         )}

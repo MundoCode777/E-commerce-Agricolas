@@ -1,4 +1,4 @@
-// backend/models/Product.js - CÓDIGO COMPLETO CORREGIDO
+// backend/models/Product.js - CÓDIGO COMPLETO CON ANÁLISIS DE SENTIMIENTOS
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
@@ -22,6 +22,20 @@ const reviewSchema = new mongoose.Schema({
   fecha: {
     type: Date,
     default: Date.now
+  },
+  // NUEVO: Análisis de sentimientos
+  analisisSentimiento: {
+    sentimiento: {
+      type: String,
+      enum: ['muy positivo', 'positivo', 'neutro', 'negativo', 'muy negativo']
+    },
+    score: Number,
+    confianza: Number,
+    esSarcasmo: Boolean,
+    indicadoresSarcasmo: [String],
+    palabrasPositivas: [String],
+    palabrasNegativas: [String],
+    emoji: String
   }
 }, {
   timestamps: true
@@ -91,6 +105,27 @@ const productSchema = new mongoose.Schema({
     default: 0
   },
   reviews: [reviewSchema],
+  
+  // NUEVO: Estadísticas de sentimientos del producto
+  estadisticasSentimientos: {
+    totalReseñas: { type: Number, default: 0 },
+    sentimientos: {
+      muyPositivo: { type: Number, default: 0 },
+      positivo: { type: Number, default: 0 },
+      neutro: { type: Number, default: 0 },
+      negativo: { type: Number, default: 0 },
+      muyNegativo: { type: Number, default: 0 }
+    },
+    porcentajes: {
+      muyPositivo: { type: Number, default: 0 },
+      positivo: { type: Number, default: 0 },
+      neutro: { type: Number, default: 0 },
+      negativo: { type: Number, default: 0 },
+      muyNegativo: { type: Number, default: 0 }
+    },
+    promedioScore: { type: Number, default: 0 },
+    sarcasmoDetectado: { type: Number, default: 0 }
+  },
   
   // Beneficios y características
   beneficios: [{

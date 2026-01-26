@@ -1,9 +1,10 @@
-// backend/routes/products.js
+// backend/routes/products.js - CÓDIGO COMPLETO CON ANÁLISIS DE SENTIMIENTOS
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const { protect, admin } = require('../middleware/auth');
 const upload = require('../config/upload');
+const { analizarSentimiento, analizarReseñasProducto } = require('../utils/sentimentAnalyzer');
 
 // RUTA PARA SUBIR IMAGEN
 router.post('/upload-image', protect, admin, upload.single('image'), async (req, res) => {
@@ -213,6 +214,7 @@ router.delete('/:id', protect, admin, async (req, res) => {
   }
 });
 
+// RUTA PARA AGREGAR RESEÑA CON ANÁLISIS DE SENTIMIENTOS
 router.post('/:id/reviews', protect, async (req, res) => {
   try {
     const { calificacion, comentario } = req.body;
@@ -237,28 +239,41 @@ router.post('/:id/reviews', protect, async (req, res) => {
       });
     }
 
+    // ANÁLISIS DE SENTIMIENTOS
+    console.log('🤖 Analizando sentimiento de la reseña...');
+    const analisis = analizarSentimiento(comentario, calificacion);
+    console.log('✅ Análisis completado:', analisis);
+
     const nuevaReview = {
       usuario: req.user.id,
       nombreUsuario: `${req.user.nombre} ${req.user.apellido}`,
       avatarUsuario: req.user.avatar,
       calificacion,
-      comentario
+      comentario,
+      analisisSentimiento: analisis
     };
 
     product.reviews.push(nuevaReview);
 
+    // Actualizar estadísticas de reseñas
     product.numeroReviews = product.reviews.length;
     product.calificacionPromedio = 
       product.reviews.reduce((acc, item) => item.calificacion + acc, 0) / product.reviews.length;
+
+    // Actualizar estadísticas de sentimientos del producto
+    const estadisticas = analizarReseñasProducto(product.reviews);
+    product.estadisticasSentimientos = estadisticas;
 
     await product.save();
 
     res.status(201).json({
       success: true,
       message: 'Reseña agregada exitosamente',
+      analisisSentimiento: analisis,
       product
     });
   } catch (error) {
+    console.error('Error al agregar reseña:', error);
     res.status(500).json({
       success: false,
       message: 'Error al agregar reseña',
@@ -300,8 +315,31 @@ router.delete('/:id/reviews/:reviewId', protect, async (req, res) => {
     if (product.reviews.length > 0) {
       product.calificacionPromedio = 
         product.reviews.reduce((acc, item) => item.calificacion + acc, 0) / product.reviews.length;
+      
+      // Recalcular estadísticas de sentimientos
+      const estadisticas = analizarReseñasProducto(product.reviews);
+      product.estadisticasSentimientos = estadisticas;
     } else {
       product.calificacionPromedio = 0;
+      product.estadisticasSentimientos = {
+        totalReseñas: 0,
+        sentimientos: {
+          muyPositivo: 0,
+          positivo: 0,
+          neutro: 0,
+          negativo: 0,
+          muyNegativo: 0
+        },
+        porcentajes: {
+          muyPositivo: 0,
+          positivo: 0,
+          neutro: 0,
+          negativo: 0,
+          muyNegativo: 0
+        },
+        promedioScore: 0,
+        sarcasmoDetectado: 0
+      };
     }
 
     await product.save();

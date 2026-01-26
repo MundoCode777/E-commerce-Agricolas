@@ -1,4 +1,4 @@
-// src/components/ProductDetail.js - CÓDIGO COMPLETO SIN MINIATURAS
+// src/components/ProductDetail.js - CÓDIGO COMPLETO CON ANÁLISIS DE SENTIMIENTOS
 import React, { useState, useEffect } from 'react';
 import { productService } from '../services/productService';
 import './ProductDetail.css';
@@ -63,8 +63,22 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
 
     setSubmittingReview(true);
     try {
-      await productService.addReview(productId, reviewForm);
-      setMessage({ type: 'success', text: '✅ Reseña agregada exitosamente' });
+      const response = await productService.addReview(productId, reviewForm);
+      
+      // Mostrar análisis de sentimiento
+      if (response.analisisSentimiento) {
+        let mensajeAnalisis = `✅ Reseña agregada exitosamente\n`;
+        mensajeAnalisis += `${response.analisisSentimiento.emoji} Sentimiento: ${response.analisisSentimiento.sentimiento}`;
+        
+        if (response.analisisSentimiento.esSarcasmo) {
+          mensajeAnalisis += `\n⚠️ Sarcasmo detectado`;
+        }
+        
+        setMessage({ type: 'success', text: mensajeAnalisis });
+      } else {
+        setMessage({ type: 'success', text: '✅ Reseña agregada exitosamente' });
+      }
+      
       setReviewForm({ calificacion: 5, comentario: '' });
       loadProduct();
     } catch (error) {
@@ -97,6 +111,17 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
     ));
   };
 
+  const getSentimentClass = (sentimiento) => {
+    const classes = {
+      'muy positivo': 'sentiment-very-positive',
+      'positivo': 'sentiment-positive',
+      'neutro': 'sentiment-neutral',
+      'negativo': 'sentiment-negative',
+      'muy negativo': 'sentiment-very-negative'
+    };
+    return classes[sentimiento] || '';
+  };
+
   if (loading) {
     return (
       <div className="product-detail-overlay">
@@ -116,7 +141,9 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
 
         {message.text && (
           <div className={`detail-alert ${message.type}`}>
-            {message.text}
+            {message.text.split('\n').map((line, index) => (
+              <div key={index}>{line}</div>
+            ))}
           </div>
         )}
 
@@ -158,6 +185,75 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
                 ({product.numeroReviews || 0} {(product.numeroReviews || 0) === 1 ? 'reseña' : 'reseñas'})
               </span>
             </div>
+
+            {/* NUEVO: Estadísticas de Sentimientos */}
+            {product.estadisticasSentimientos && product.estadisticasSentimientos.totalReseñas > 0 && (
+              <div className="sentiment-stats">
+                <h4>📊 Análisis de Opiniones</h4>
+                <div className="sentiment-bars">
+                  <div className="sentiment-bar">
+                    <span className="sentiment-label">😊 Muy Positivo</span>
+                    <div className="bar-container">
+                      <div 
+                        className="bar bar-very-positive" 
+                        style={{ width: `${product.estadisticasSentimientos.porcentajes.muyPositivo}%` }}
+                      />
+                      <span className="percentage">{product.estadisticasSentimientos.porcentajes.muyPositivo}%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="sentiment-bar">
+                    <span className="sentiment-label">🙂 Positivo</span>
+                    <div className="bar-container">
+                      <div 
+                        className="bar bar-positive" 
+                        style={{ width: `${product.estadisticasSentimientos.porcentajes.positivo}%` }}
+                      />
+                      <span className="percentage">{product.estadisticasSentimientos.porcentajes.positivo}%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="sentiment-bar">
+                    <span className="sentiment-label">😐 Neutro</span>
+                    <div className="bar-container">
+                      <div 
+                        className="bar bar-neutral" 
+                        style={{ width: `${product.estadisticasSentimientos.porcentajes.neutro}%` }}
+                      />
+                      <span className="percentage">{product.estadisticasSentimientos.porcentajes.neutro}%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="sentiment-bar">
+                    <span className="sentiment-label">🙁 Negativo</span>
+                    <div className="bar-container">
+                      <div 
+                        className="bar bar-negative" 
+                        style={{ width: `${product.estadisticasSentimientos.porcentajes.negativo}%` }}
+                      />
+                      <span className="percentage">{product.estadisticasSentimientos.porcentajes.negativo}%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="sentiment-bar">
+                    <span className="sentiment-label">😞 Muy Negativo</span>
+                    <div className="bar-container">
+                      <div 
+                        className="bar bar-very-negative" 
+                        style={{ width: `${product.estadisticasSentimientos.porcentajes.muyNegativo}%` }}
+                      />
+                      <span className="percentage">{product.estadisticasSentimientos.porcentajes.muyNegativo}%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {product.estadisticasSentimientos.sarcasmoDetectado > 0 && (
+                  <div className="sarcasm-alert">
+                    ⚠️ {product.estadisticasSentimientos.sarcasmoDetectado} reseña(s) con sarcasmo detectado
+                  </div>
+                )}
+              </div>
+            )}
 
             <p className="product-short-description">{product.descripcion}</p>
 
@@ -272,7 +368,7 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
                       required
                     />
                     <button type="submit" disabled={submittingReview}>
-                      {submittingReview ? 'Enviando...' : 'Publicar Reseña'}
+                      {submittingReview ? 'Analizando y enviando...' : 'Publicar Reseña'}
                     </button>
                   </form>
                 )}
@@ -290,7 +386,39 @@ function ProductDetail({ productId, onClose, onAddToCart }) {
                             {renderStars(review.calificacion)}
                           </div>
                         </div>
+
+                        {/* NUEVO: Badge de Sentimiento */}
+                        {review.analisisSentimiento && (
+                          <div className="sentiment-info">
+                            <span className={`sentiment-badge ${getSentimentClass(review.analisisSentimiento.sentimiento)}`}>
+                              {review.analisisSentimiento.emoji} {review.analisisSentimiento.sentimiento}
+                            </span>
+                            {review.analisisSentimiento.esSarcasmo && (
+                              <span className="sarcasm-badge" title={review.analisisSentimiento.indicadoresSarcasmo?.join(', ')}>
+                                🎭 Sarcasmo detectado
+                              </span>
+                            )}
+                          </div>
+                        )}
+
                         <p className="review-comment">{review.comentario}</p>
+
+                        {/* NUEVO: Palabras clave */}
+                        {review.analisisSentimiento && (
+                          <div className="sentiment-keywords">
+                            {review.analisisSentimiento.palabrasPositivas?.length > 0 && (
+                              <div className="keywords-positive">
+                                ✓ {review.analisisSentimiento.palabrasPositivas.join(', ')}
+                              </div>
+                            )}
+                            {review.analisisSentimiento.palabrasNegativas?.length > 0 && (
+                              <div className="keywords-negative">
+                                ✗ {review.analisisSentimiento.palabrasNegativas.join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         <span className="review-date">
                           {new Date(review.fecha).toLocaleDateString('es-ES', {
                             year: 'numeric',

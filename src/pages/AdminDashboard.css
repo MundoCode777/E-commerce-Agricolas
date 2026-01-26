@@ -704,3 +704,57 @@
     flex-direction: column;
   }
 }
+/* Agregar al final de src/pages/AdminDashboard.css */
+
+/* Indicadores de Sentimientos en Productos */
+.producto-sentiment-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: #f5f7fa;
+  border-radius: 8px;
+}
+
+.reviews-count {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.alert-indicator {
+  background: #fff3cd;
+  color: #856404;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: help;
+  border: 1px solid #ffc107;
+}
+
+.sarcasm-indicator {
+  background: #fff9e6;
+  color: #e65100;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: help;
+  border: 1px solid #ff9800;
+}
+
+/* Sección de Sentimientos */
+.sentimientos-section {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

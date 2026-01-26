@@ -1,0 +1,448 @@
+/* src/components/SentimentDashboard.css - NUEVO ARCHIVO */
+
+.sentiment-dashboard {
+  padding: 2rem;
+  background: #f5f7fa;
+  border-radius: 20px;
+  margin: 2rem 0;
+}
+
+.sentiment-dashboard h2 {
+  font-size: 2rem;
+  color: #2d5016;
+  margin-bottom: 2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Estadísticas Globales */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(74, 124, 44, 0.15);
+}
+
+.stat-icon {
+  font-size: 3rem;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  width: 70px;
+  height: 70px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #2d5016;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+}
+
+/* Sentimientos Globales */
+.global-sentiment {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.global-sentiment h3 {
+  margin: 0 0 1.5rem 0;
+  color: #2d5016;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.sentiment-bars-global {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sentiment-bar-global {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sentiment-bar-global .label {
+  min-width: 140px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.bar-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: #f5f7fa;
+  border-radius: 10px;
+  padding: 0.4rem;
+  height: 35px;
+}
+
+.bar-wrapper .bar {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.8s ease;
+  min-width: 2px;
+}
+
+.bar-wrapper .percentage {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #666;
+  min-width: 45px;
+}
+
+/* Sección de Alertas */
+.alert-section {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%);
+  padding: 2rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  border-left: 5px solid #ffc107;
+}
+
+.alert-section h3 {
+  margin: 0 0 0.5rem 0;
+  color: #856404;
+  font-size: 1.3rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.alert-description {
+  margin: 0 0 1.5rem 0;
+  color: #856404;
+  font-size: 0.95rem;
+}
+
+.alert-products {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.alert-product-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #dc3545;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.alert-product-card:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+}
+
+.alert-product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.alert-product-header h4 {
+  margin: 0;
+  color: #2d5016;
+  font-size: 1.1rem;
+  font-weight: 700;
+  flex: 1;
+}
+
+.alert-badge {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+}
+
+.alert-product-stats {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.alert-product-stats span {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+}
+
+/* Sección de Sarcasmo */
+.sarcasm-section {
+  background: linear-gradient(135d, #fff9e6 0%, #fff3cd 100%);
+  padding: 2rem;
+  border-radius: 15px;
+  border-left: 5px solid #ff9800;
+}
+
+.sarcasm-section h3 {
+  margin: 0 0 1.5rem 0;
+  color: #e65100;
+  font-size: 1.3rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sarcasm-products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.sarcasm-product-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #ff9800;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.sarcasm-product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.2);
+}
+
+.sarcasm-product-card h4 {
+  margin: 0 0 1rem 0;
+  color: #2d5016;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sarcasm-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sarcasm-count {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e65100;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.sarcasm-count::before {
+  content: '🎭';
+  font-size: 1.2rem;
+}
+
+.total-reviews {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sentiment-dashboard > * {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.stat-card {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sarcasm-products {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .sentiment-dashboard {
+    padding: 1.5rem;
+  }
+
+  .sentiment-dashboard h2 {
+    font-size: 1.5rem;
+  }
+
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.2rem;
+  }
+
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2.5rem;
+  }
+
+  .stat-number {
+    font-size: 1.6rem;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+  }
+
+  .global-sentiment,
+  .alert-section,
+  .sarcasm-section {
+    padding: 1.5rem;
+  }
+
+  .global-sentiment h3,
+  .alert-section h3,
+  .sarcasm-section h3 {
+    font-size: 1.1rem;
+  }
+
+  .sentiment-bar-global {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .sentiment-bar-global .label {
+    min-width: auto;
+  }
+
+  .bar-wrapper {
+    width: 100%;
+  }
+
+  .alert-product-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .alert-badge {
+    align-self: flex-start;
+  }
+
+  .alert-product-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sarcasm-products {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .sentiment-dashboard {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .sentiment-dashboard h2 {
+    font-size: 1.3rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 2rem;
+  }
+
+  .stat-number {
+    font-size: 1.4rem;
+  }
+
+  .global-sentiment,
+  .alert-section,
+  .sarcasm-section {
+    padding: 1rem;
+  }
+
+  .bar-wrapper {
+    padding: 0.3rem;
+    height: 30px;
+  }
+
+  .bar-wrapper .percentage {
+    font-size: 0.8rem;
+    min-width: 40px;
+  }
+
+  .alert-product-card,
+  .sarcasm-product-card {
+    padding: 1rem;
+  }
+}

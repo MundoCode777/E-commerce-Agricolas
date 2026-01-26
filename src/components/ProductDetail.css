@@ -697,3 +697,303 @@
     padding: 1.5rem;
   }
 }
+/* src/components/ProductDetail.css - AGREGAR AL FINAL DEL ARCHIVO EXISTENTE */
+
+/* Estadísticas de Sentimientos */
+.sentiment-stats {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin: 1.5rem 0;
+  border-left: 4px solid #4a7c2c;
+}
+
+.sentiment-stats h4 {
+  margin: 0 0 1rem 0;
+  color: #2d5016;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.sentiment-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.sentiment-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.sentiment-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.bar-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border-radius: 10px;
+  padding: 0.3rem;
+  height: 30px;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.5s ease;
+  min-width: 2px;
+}
+
+.bar-very-positive {
+  background: linear-gradient(90deg, #4caf50 0%, #2e7d32 100%);
+}
+
+.bar-positive {
+  background: linear-gradient(90deg, #8bc34a 0%, #689f38 100%);
+}
+
+.bar-neutral {
+  background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+}
+
+.bar-negative {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+}
+
+.bar-very-negative {
+  background: linear-gradient(90deg, #f44336 0%, #d32f2f 100%);
+}
+
+.percentage {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #666;
+  min-width: 40px;
+}
+
+.sarcasm-alert {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 8px;
+  color: #856404;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Badge de Sentimiento en Reseñas */
+.sentiment-info {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0.8rem 0;
+  flex-wrap: wrap;
+}
+
+.sentiment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.sentiment-very-positive {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.sentiment-positive {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.sentiment-neutral {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.sentiment-negative {
+  background: #ffe5cc;
+  color: #d84315;
+  border: 1px solid #ffccbc;
+}
+
+.sentiment-very-negative {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.sarcasm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: #fff3cd;
+  color: #856404;
+  border: 2px solid #ffc107;
+  cursor: help;
+  animation: pulse-sarcasm 2s ease-in-out infinite;
+}
+
+@keyframes pulse-sarcasm {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 193, 7, 0);
+  }
+}
+
+.sarcasm-badge:hover {
+  background: #ffc107;
+  color: #000;
+  transform: scale(1.05);
+}
+
+/* Palabras Clave */
+.sentiment-keywords {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: white;
+  border-radius: 10px;
+  border-left: 3px solid #e0e0e0;
+}
+
+.keywords-positive,
+.keywords-negative {
+  font-size: 0.85rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.keywords-positive {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-left: 3px solid #4caf50;
+}
+
+.keywords-negative {
+  background: #ffebee;
+  color: #c62828;
+  border-left: 3px solid #f44336;
+}
+
+/* Animación de entrada para reseñas */
+.review-item {
+  animation: slideInReview 0.3s ease-out;
+}
+
+@keyframes slideInReview {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Mejora del formulario de reseñas */
+.review-form button[type="submit"]:disabled {
+  background: linear-gradient(135deg, #ccc 0%, #999 100%);
+  cursor: wait;
+}
+
+/* Responsive para estadísticas de sentimientos */
+@media (max-width: 768px) {
+  .sentiment-stats {
+    padding: 1.2rem;
+  }
+
+  .sentiment-stats h4 {
+    font-size: 1rem;
+  }
+
+  .sentiment-label {
+    font-size: 0.8rem;
+  }
+
+  .percentage {
+    font-size: 0.8rem;
+    min-width: 35px;
+  }
+
+  .sentiment-info {
+    gap: 0.5rem;
+  }
+
+  .sentiment-badge,
+  .sarcasm-badge {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .sentiment-keywords {
+    padding: 0.8rem;
+  }
+
+  .keywords-positive,
+  .keywords-negative {
+    font-size: 0.8rem;
+    padding: 0.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sentiment-stats {
+    padding: 1rem;
+  }
+
+  .sentiment-stats h4 {
+    font-size: 0.95rem;
+  }
+
+  .sentiment-label {
+    font-size: 0.75rem;
+  }
+
+  .bar-container {
+    height: 25px;
+  }
+
+  .percentage {
+    font-size: 0.75rem;
+    min-width: 30px;
+  }
+
+  .sentiment-badge,
+  .sarcasm-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .sarcasm-alert {
+    font-size: 0.85rem;
+    padding: 0.6rem;
+  }
+}
