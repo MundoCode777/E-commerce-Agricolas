@@ -615,11 +615,9 @@ in the Software without restriction...
 
 **Luis Andres Rodriguez Valle**
 
-- 🌐 GitHub: [@tu-usuario](https://github.com/tu-usuario)
-- 📧 Email: tu-email@ejemplo.com
+- 🌐 GitHub: [@tu-usuario](https://github.com/MundoCode777)
+- 📧 Email: luisrodriguezvalle21@gmail.com
 - 💼 LinkedIn: [Tu Perfil](https://linkedin.com/in/tu-perfil)
-- 🐦 Twitter: [@tu-usuario](https://twitter.com/tu-usuario)
-
 ---
 
 ## 🙏 Agradecimientos
@@ -659,7 +657,6 @@ in the Software without restriction...
 <div align="center">
 
 ### ⭐ Si este proyecto te fue útil, considera darle una estrella ⭐
-**Creador Luis Rodriguez**
 **Hecho con ❤️ y ☕ en Ecuador 🇪🇨**
 
 </div>
