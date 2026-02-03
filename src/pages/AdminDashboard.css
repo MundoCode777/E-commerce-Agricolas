@@ -758,3 +758,120 @@
     transform: translateY(0);
   }
 }
+/* Agregar al final de AdminDashboard.css */
+
+.orden-totales {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.orden-totales p {
+  margin: 5px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.total-final {
+  font-size: 1.1rem;
+  color: #2ecc71;
+  border-top: 2px solid #2ecc71;
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.item-subtotal {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-left: 10px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state p {
+  color: #7f8c8d;
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+}
+
+/* Estados de órdenes mejorados */
+.estado-badge.procesando {
+  background: #f39c12;
+}
+
+.estado-badge.enviado {
+  background: #3498db;
+}
+/* SOLUCIÓN: SweetAlert por encima del modal */
+.swal-high-zindex {
+  z-index: 20000 !important;
+}
+
+.swal2-container.swal-high-zindex {
+  z-index: 20000 !important;
+}
+
+/* Asegurar que el overlay del modal tenga menos z-index */
+.modal-overlay {
+  z-index: 10000;
+}
+
+.modal-content {
+  z-index: 10001;
+}
+
+/* Estilos adicionales para órdenes */
+.orden-totales {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.orden-totales p {
+  margin: 5px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.total-final {
+  font-size: 1.1rem;
+  color: #2ecc71;
+  border-top: 2px solid #2ecc71;
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.item-subtotal {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-left: 10px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state p {
+  color: #7f8c8d;
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+}
+
+/* Estados de órdenes mejorados */
+.estado-badge.procesando {
+  background: #f39c12;
+}
+
+.estado-badge.enviado {
+  background: #3498db;
+}

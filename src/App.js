@@ -1,4 +1,4 @@
-// src/App.js - CÓDIGO COMPLETO CON TESTIMONIOS
+// src/App.js - CÓDIGO COMPLETO CON SWEETALERT2
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -11,6 +11,7 @@ import Checkout from './components/Checkout';
 import UserProfile from './components/UserProfile';
 import ProductList from './components/ProductList';
 import Testimonials from './components/Testimonials';
+import Swal from 'sweetalert2';
 import './App.css';
 
 function App() {
@@ -60,6 +61,16 @@ function App() {
     // Cargar carrito del usuario que acaba de iniciar sesión
     loadUserCart(userData.id);
     
+    // SweetAlert de bienvenida
+    Swal.fire({
+      icon: 'success',
+      title: `¡Bienvenido ${userData.nombre}!`,
+      text: 'Has iniciado sesión correctamente',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true
+    });
+    
     // Redirigir según el rol
     if (userData.rol === 'administrador') {
       setCurrentView('admin');
@@ -71,6 +82,15 @@ function App() {
     if (user) {
       saveUserCart(user.id, cart);
     }
+    
+    // SweetAlert de confirmación
+    Swal.fire({
+      icon: 'info',
+      title: '¡Hasta pronto!',
+      text: 'Has cerrado sesión correctamente',
+      timer: 1500,
+      showConfirmButton: false
+    });
     
     // Limpiar sesión
     localStorage.removeItem('token');
@@ -84,12 +104,30 @@ function App() {
   const navigateTo = (view) => {
     // Verificar autenticación para ciertas vistas
     if ((view === 'checkout' || view === 'profile') && !isAuthenticated) {
-      setShowLogin(true);
+      Swal.fire({
+        icon: 'warning',
+        title: 'Acceso restringido',
+        text: 'Por favor inicia sesión para continuar',
+        confirmButtonText: 'Iniciar Sesión',
+        confirmButtonColor: '#2ecc71',
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setShowLogin(true);
+        }
+      });
       return;
     }
 
     if (view === 'admin' && (!isAuthenticated || user?.rol !== 'administrador')) {
-      alert('⚠️ Acceso denegado. Solo administradores pueden acceder al panel.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Acceso denegado',
+        text: 'Solo administradores pueden acceder al panel',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#e74c3c'
+      });
       return;
     }
 
@@ -100,8 +138,20 @@ function App() {
   // Funciones del carrito
   const addToCart = (product, quantity = 1) => {
     if (!isAuthenticated) {
-      alert('Por favor inicia sesión para agregar productos al carrito');
-      setShowLogin(true);
+      Swal.fire({
+        icon: 'warning',
+        title: 'Inicia sesión',
+        text: 'Debes iniciar sesión para agregar productos al carrito',
+        confirmButtonText: 'Iniciar Sesión',
+        confirmButtonColor: '#2ecc71',
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar',
+        cancelButtonColor: '#95a5a6'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setShowLogin(true);
+        }
+      });
       return;
     }
 
@@ -115,8 +165,32 @@ function App() {
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
+        
+        // SweetAlert de producto actualizado
+        Swal.fire({
+          icon: 'success',
+          title: 'Cantidad actualizada',
+          text: `${product.name} - Cantidad: ${existingItem.quantity + quantity}`,
+          timer: 1500,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end',
+          timerProgressBar: true
+        });
       } else {
         newCart = [...prevCart, { ...product, quantity }];
+        
+        // SweetAlert de producto agregado
+        Swal.fire({
+          icon: 'success',
+          title: '¡Producto agregado!',
+          text: `${product.name} se agregó al carrito`,
+          timer: 1500,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end',
+          timerProgressBar: true
+        });
       }
       
       // Guardar carrito del usuario
@@ -162,12 +236,32 @@ function App() {
   };
 
   const clearCart = () => {
-    setCart([]);
-    
-    // Limpiar carrito del usuario en localStorage
-    if (user) {
-      saveUserCart(user.id, []);
-    }
+    Swal.fire({
+      icon: 'warning',
+      title: '¿Vaciar carrito?',
+      text: 'Se eliminarán todos los productos del carrito',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, vaciar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#e74c3c',
+      cancelButtonColor: '#95a5a6'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setCart([]);
+        
+        // Limpiar carrito del usuario en localStorage
+        if (user) {
+          saveUserCart(user.id, []);
+        }
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Carrito vaciado',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
   };
 
   const getCartTotal = () => {

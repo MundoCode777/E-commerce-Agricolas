@@ -1,4 +1,4 @@
-// backend/models/Order.js
+// backend/models/Order.js - CÓDIGO CORREGIDO
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
@@ -17,7 +17,8 @@ const orderSchema = new mongoose.Schema({
     nombre: String,
     precio: Number,
     cantidad: Number,
-    image: String
+    image: String,
+    unit: String  // Agregado para mostrar la unidad
   }],
   subtotal: {
     type: Number,
@@ -46,7 +47,7 @@ const orderSchema = new mongoose.Schema({
   },
   estado: {
     type: String,
-    enum: ['pendiente', 'confirmado', 'en_camino', 'entregado', 'cancelado'],
+    enum: ['pendiente', 'procesando', 'enviado', 'entregado', 'cancelado'],  // ✅ ACTUALIZADO
     default: 'pendiente'
   },
   fechaOrden: {

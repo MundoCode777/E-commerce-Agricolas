@@ -1,7 +1,8 @@
-// src/pages/AdminDashboard.js - CÓDIGO COMPLETO CON ANÁLISIS DE SENTIMIENTOS
+// src/pages/AdminDashboard.js - CÓDIGO COMPLETO CON SWEETALERT2 Y Z-INDEX CORREGIDO
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import SentimentDashboard from '../components/SentimentDashboard';
+import Swal from 'sweetalert2';
 import './AdminDashboard.css';
 
 function AdminDashboard() {
@@ -11,7 +12,6 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [notification, setNotification] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
 
@@ -43,15 +43,15 @@ function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error al cargar datos:', error);
-      mostrarNotificacion('Error al cargar datos', 'error');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al cargar datos',
+        text: error.response?.data?.message || 'No se pudieron cargar los datos',
+        confirmButtonColor: '#e74c3c'
+      });
     } finally {
       setLoading(false);
     }
-  };
-
-  const mostrarNotificacion = (mensaje, tipo = 'success') => {
-    setNotification({ mensaje, tipo });
-    setTimeout(() => setNotification(null), 3000);
   };
 
   const handleInputChange = (e) => {
@@ -77,14 +77,30 @@ function AdminDashboard() {
 
     // Validar tamaño
     if (file.size > 5 * 1024 * 1024) {
-      mostrarNotificacion('La imagen no debe superar 5MB', 'error');
+      Swal.fire({
+        icon: 'error',
+        title: 'Archivo muy grande',
+        text: 'La imagen no debe superar 5MB',
+        confirmButtonColor: '#e74c3c',
+        customClass: {
+          container: 'swal-high-zindex'
+        }
+      });
       e.target.value = '';
       return;
     }
 
     // Validar tipo
     if (!file.type.startsWith('image/')) {
-      mostrarNotificacion('Solo se permiten archivos de imagen', 'error');
+      Swal.fire({
+        icon: 'error',
+        title: 'Formato inválido',
+        text: 'Solo se permiten archivos de imagen',
+        confirmButtonColor: '#e74c3c',
+        customClass: {
+          container: 'swal-high-zindex'
+        }
+      });
       e.target.value = '';
       return;
     }
@@ -113,10 +129,27 @@ function AdminDashboard() {
         image: response.data.imageUrl
       }));
 
-      mostrarNotificacion('✅ Imagen subida exitosamente', 'success');
+      Swal.fire({
+        icon: 'success',
+        title: '¡Imagen subida!',
+        text: 'La imagen se subió correctamente',
+        timer: 1500,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end',
+        timerProgressBar: true
+      });
     } catch (error) {
       console.error('Error al subir imagen:', error);
-      mostrarNotificacion('❌ Error al subir imagen', 'error');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al subir imagen',
+        text: error.response?.data?.message || 'No se pudo subir la imagen',
+        confirmButtonColor: '#e74c3c',
+        customClass: {
+          container: 'swal-high-zindex'
+        }
+      });
       setImagePreview('');
       e.target.value = '';
     } finally {
@@ -125,13 +158,38 @@ function AdminDashboard() {
   };
 
   const handleRemoveImage = () => {
-    setImagePreview('');
-    setFormData(prev => ({
-      ...prev,
-      image: ''
-    }));
-    const fileInput = document.querySelector('input[type="file"]');
-    if (fileInput) fileInput.value = '';
+    Swal.fire({
+      icon: 'warning',
+      title: '¿Eliminar imagen?',
+      text: 'Tendrás que seleccionar una nueva imagen',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#e74c3c',
+      cancelButtonColor: '#95a5a6',
+      customClass: {
+        container: 'swal-high-zindex'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setImagePreview('');
+        setFormData(prev => ({
+          ...prev,
+          image: ''
+        }));
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) fileInput.value = '';
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Imagen eliminada',
+          timer: 1000,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end'
+        });
+      }
+    });
   };
 
   const abrirModalNuevo = () => {
@@ -181,9 +239,36 @@ function AdminDashboard() {
     e.preventDefault();
     
     if (!formData.image) {
-      mostrarNotificacion('Por favor sube una imagen del producto', 'error');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Imagen requerida',
+        text: 'Por favor sube una imagen del producto',
+        confirmButtonColor: '#f39c12',
+        customClass: {
+          container: 'swal-high-zindex'
+        }
+      });
       return;
     }
+
+    // Confirmación antes de guardar
+    const result = await Swal.fire({
+      icon: 'question',
+      title: editingProduct ? '¿Actualizar producto?' : '¿Crear producto?',
+      text: editingProduct 
+        ? `Se actualizará el producto "${formData.nombre}"`
+        : `Se creará el producto "${formData.nombre}"`,
+      showCancelButton: true,
+      confirmButtonText: editingProduct ? 'Actualizar' : 'Crear',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#2ecc71',
+      cancelButtonColor: '#95a5a6',
+      customClass: {
+        container: 'swal-high-zindex'
+      }
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const productData = {
@@ -195,10 +280,32 @@ function AdminDashboard() {
 
       if (editingProduct) {
         await api.put(`/products/${editingProduct._id}`, productData);
-        mostrarNotificacion('✅ Producto actualizado exitosamente', 'success');
+        
+        await Swal.fire({
+          icon: 'success',
+          title: '¡Producto actualizado!',
+          text: `${formData.nombre} se actualizó correctamente`,
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true,
+          customClass: {
+            container: 'swal-high-zindex'
+          }
+        });
       } else {
         await api.post('/products', productData);
-        mostrarNotificacion('✅ Producto creado exitosamente', 'success');
+        
+        await Swal.fire({
+          icon: 'success',
+          title: '¡Producto creado!',
+          text: `${formData.nombre} se creó correctamente`,
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true,
+          customClass: {
+            container: 'swal-high-zindex'
+          }
+        });
       }
 
       setShowModal(false);
@@ -206,31 +313,114 @@ function AdminDashboard() {
       cargarDatos();
     } catch (error) {
       console.error('Error al guardar producto:', error);
-      mostrarNotificacion(error.response?.data?.message || '❌ Error al guardar producto', 'error');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al guardar',
+        text: error.response?.data?.message || 'No se pudo guardar el producto',
+        confirmButtonColor: '#e74c3c',
+        customClass: {
+          container: 'swal-high-zindex'
+        }
+      });
     }
   };
 
-  const eliminarProducto = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      try {
-        await api.delete(`/products/${id}`);
-        mostrarNotificacion('✅ Producto eliminado exitosamente', 'success');
-        cargarDatos();
-      } catch (error) {
-        console.error('Error al eliminar:', error);
-        mostrarNotificacion('❌ Error al eliminar producto', 'error');
-      }
+  const eliminarProducto = async (producto) => {
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: '¿Eliminar producto?',
+      html: `
+        <p>¿Estás seguro de eliminar <strong>${producto.nombre}</strong>?</p>
+        <p style="color: #e74c3c; font-size: 0.9rem;">Esta acción no se puede deshacer</p>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#e74c3c',
+      cancelButtonColor: '#95a5a6',
+      focusCancel: true
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await api.delete(`/products/${producto._id}`);
+      
+      Swal.fire({
+        icon: 'success',
+        title: '¡Producto eliminado!',
+        text: `${producto.nombre} se eliminó correctamente`,
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true
+      });
+      
+      cargarDatos();
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al eliminar',
+        text: error.response?.data?.message || 'No se pudo eliminar el producto',
+        confirmButtonColor: '#e74c3c'
+      });
     }
   };
 
-  const actualizarEstadoOrden = async (ordenId, nuevoEstado) => {
+  const actualizarEstadoOrden = async (ordenId, nuevoEstado, numeroOrden) => {
+    const estadosEmojis = {
+      pendiente: '⏳ Pendiente',
+      procesando: '⚙️ Procesando',
+      enviado: '🚚 Enviado',
+      entregado: '✅ Entregado',
+      cancelado: '❌ Cancelado'
+    };
+
+    const result = await Swal.fire({
+      icon: 'question',
+      title: '¿Actualizar estado de la orden?',
+      html: `
+        <p>Orden <strong>#${numeroOrden}</strong></p>
+        <p>Cambiar estado a: <strong>${estadosEmojis[nuevoEstado]}</strong></p>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Sí, actualizar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#2ecc71',
+      cancelButtonColor: '#95a5a6'
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       await api.put(`/orders/${ordenId}/estado`, { estado: nuevoEstado });
-      mostrarNotificacion('✅ Estado actualizado exitosamente', 'success');
+      
+      Swal.fire({
+        icon: 'success',
+        title: '¡Estado actualizado!',
+        text: `La orden ahora está en estado: ${estadosEmojis[nuevoEstado]}`,
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+        toast: true,
+        position: 'top-end'
+      });
+      
       cargarDatos();
     } catch (error) {
       console.error('Error al actualizar estado:', error);
-      mostrarNotificacion('❌ Error al actualizar estado', 'error');
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al actualizar',
+        html: `
+          <p><strong>No se pudo actualizar el estado</strong></p>
+          <p>${error.response?.data?.message || 'Error desconocido'}</p>
+          ${error.response?.data?.error ? `<small style="color: #666;">${error.response.data.error}</small>` : ''}
+        `,
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#e74c3c'
+      });
     }
   };
 
@@ -246,12 +436,6 @@ function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      {notification && (
-        <div className={`notification ${notification.tipo}`}>
-          {notification.mensaje}
-        </div>
-      )}
-
       <div className="admin-header">
         <h1>🌾 Panel de Administración - Insumos Agrícolas</h1>
         <div className="admin-tabs">
@@ -288,6 +472,13 @@ function AdminDashboard() {
 
             {loading ? (
               <div className="loading">Cargando productos...</div>
+            ) : productos.length === 0 ? (
+              <div className="empty-state">
+                <p>📦 No hay productos registrados</p>
+                <button className="btn-primary" onClick={abrirModalNuevo}>
+                  Crear primer producto
+                </button>
+              </div>
             ) : (
               <div className="productos-grid">
                 {productos.map(producto => (
@@ -307,7 +498,6 @@ function AdminDashboard() {
                         <span className="stock">Stock: {producto.stock}</span>
                       </div>
                       
-                      {/* NUEVO: Indicador de sentimientos */}
                       {producto.numeroReviews > 0 && producto.estadisticasSentimientos && (
                         <div className="producto-sentiment-mini">
                           <span className="reviews-count">
@@ -336,7 +526,7 @@ function AdminDashboard() {
                         </button>
                         <button 
                           className="btn-delete"
-                          onClick={() => eliminarProducto(producto._id)}
+                          onClick={() => eliminarProducto(producto)}
                         >
                           🗑️ Eliminar
                         </button>
@@ -354,6 +544,10 @@ function AdminDashboard() {
             <h2>Gestión de Órdenes</h2>
             {loading ? (
               <div className="loading">Cargando órdenes...</div>
+            ) : ordenes.length === 0 ? (
+              <div className="empty-state">
+                <p>📦 No hay órdenes registradas</p>
+              </div>
             ) : (
               <div className="ordenes-list">
                 {ordenes.map(orden => (
@@ -361,38 +555,61 @@ function AdminDashboard() {
                     <div className="orden-header">
                       <h3>Orden #{orden.numeroOrden}</h3>
                       <span className={`estado-badge ${orden.estado}`}>
-                        {orden.estado}
+                        {orden.estado === 'pendiente' && '⏳ Pendiente'}
+                        {orden.estado === 'procesando' && '⚙️ Procesando'}
+                        {orden.estado === 'enviado' && '🚚 Enviado'}
+                        {orden.estado === 'entregado' && '✅ Entregado'}
+                        {orden.estado === 'cancelado' && '❌ Cancelado'}
                       </span>
                     </div>
                     <div className="orden-body">
                       <p><strong>Cliente:</strong> {orden.usuario?.nombre || 'N/A'}</p>
+                      <p><strong>Email:</strong> {orden.usuario?.email || 'N/A'}</p>
                       <p><strong>Total:</strong> ${orden.total?.toFixed(2)}</p>
-                      <p><strong>Fecha:</strong> {new Date(orden.createdAt).toLocaleDateString()}</p>
-                      <p><strong>Dirección:</strong> {orden.direccionEntrega?.direccion}</p>
-                      <p><strong>Método de Pago:</strong> {orden.metodoPago}</p>
+                      <p><strong>Fecha:</strong> {new Date(orden.createdAt).toLocaleDateString('es-EC', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}</p>
+                      <p><strong>Dirección:</strong> {orden.direccionEntrega?.direccion}, {orden.direccionEntrega?.ciudad}</p>
+                      <p><strong>Teléfono:</strong> {orden.direccionEntrega?.telefono}</p>
+                      <p><strong>Método de Pago:</strong> {
+                        orden.metodoPago === 'efectivo' ? '💵 Efectivo' :
+                        orden.metodoPago === 'transferencia' ? '🏦 Transferencia' :
+                        '💳 Tarjeta'
+                      }</p>
                       
                       <div className="orden-items">
                         <strong>Productos:</strong>
                         <ul>
                           {orden.items?.map((item, idx) => (
                             <li key={idx}>
-                              {item.nombre} - {item.cantidad} {item.unit} x ${item.precio}
+                              {item.nombre} - {item.cantidad} {item.unit || 'unidad(es)'} x ${item.precio.toFixed(2)}
+                              <span className="item-subtotal"> = ${(item.cantidad * item.precio).toFixed(2)}</span>
                             </li>
                           ))}
                         </ul>
+                        <div className="orden-totales">
+                          <p><strong>Subtotal:</strong> ${orden.subtotal?.toFixed(2)}</p>
+                          <p><strong>Envío:</strong> ${orden.costoEnvio?.toFixed(2)}</p>
+                          <p className="total-final"><strong>TOTAL:</strong> ${orden.total?.toFixed(2)}</p>
+                        </div>
                       </div>
 
                       <div className="orden-actions">
+                        <label><strong>Actualizar Estado:</strong></label>
                         <select
                           value={orden.estado}
-                          onChange={(e) => actualizarEstadoOrden(orden._id, e.target.value)}
+                          onChange={(e) => actualizarEstadoOrden(orden._id, e.target.value, orden.numeroOrden)}
                           className="estado-select"
                         >
-                          <option value="pendiente">Pendiente</option>
-                          <option value="procesando">Procesando</option>
-                          <option value="enviado">Enviado</option>
-                          <option value="entregado">Entregado</option>
-                          <option value="cancelado">Cancelado</option>
+                          <option value="pendiente">⏳ Pendiente</option>
+                          <option value="procesando">⚙️ Procesando</option>
+                          <option value="enviado">🚚 Enviado</option>
+                          <option value="entregado">✅ Entregado</option>
+                          <option value="cancelado">❌ Cancelado</option>
                         </select>
                       </div>
                     </div>
@@ -403,7 +620,6 @@ function AdminDashboard() {
           </div>
         )}
 
-        {/* NUEVA SECCIÓN: Dashboard de Sentimientos */}
         {activeTab === 'sentimientos' && (
           <div className="sentimientos-section">
             {loading ? (
