@@ -226,6 +226,124 @@
   font-weight: 600;
 }
 
+/* DISEÑO DE TARJETA DE CRÉDITO MEJORADO */
+.credit-card-preview {
+  width: 100%;
+  max-width: 380px;
+  height: 220px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  color: white;
+  font-family: 'Courier New', monospace;
+  transition: all 0.3s ease;
+}
+
+.credit-card-preview:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+}
+
+.credit-card-preview::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+}
+
+.card-chip {
+  width: 50px;
+  height: 40px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.card-chip::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.card-number {
+  font-size: 1.5rem;
+  letter-spacing: 3px;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-weight: 500;
+}
+
+.card-details {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.card-holder,
+.card-expiry {
+  flex: 1;
+}
+
+.card-label {
+  font-size: 0.65rem;
+  opacity: 0.7;
+  margin-bottom: 0.3rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.card-value {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card-logo {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  font-size: 3rem;
+  opacity: 0.9;
+  z-index: 1;
+}
+
+/* Inputs de tarjeta con estilo mejorado */
+.card-input {
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem !important;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+.card-input::placeholder {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
 .submit-order-btn {
   width: 100%;
   background: linear-gradient(135deg, #4a7c2c 0%, #2d5016 100%);
@@ -490,6 +608,30 @@
   50% { opacity: 0.5; }
 }
 
+/* Estilos personalizados para SweetAlert */
+.sweet-alert-custom {
+  border-radius: 20px !important;
+  font-family: Arial, sans-serif !important;
+}
+
+.sweet-confirm-btn {
+  padding: 0.8rem 2rem !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.sweet-confirm-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4) !important;
+}
+
+.sweet-html-container {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .checkout-content {
@@ -575,29 +717,34 @@
   .success-details p {
     font-size: 0.9rem;
   }
-}
-/* Agregar al final de src/components/Checkout.css */
 
-/* Estilos personalizados para SweetAlert */
-.sweet-alert-custom {
-  border-radius: 20px !important;
-  font-family: Arial, sans-serif !important;
-}
+  /* Responsive para la tarjeta */
+  .credit-card-preview {
+    max-width: 100%;
+    height: 200px;
+    padding: 1.2rem;
+  }
 
-.sweet-confirm-btn {
-  padding: 0.8rem 2rem !important;
-  border-radius: 10px !important;
-  font-weight: 700 !important;
-  font-size: 1.1rem !important;
-  transition: all 0.3s ease !important;
-}
+  .card-number {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+  }
 
-.sweet-confirm-btn:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4) !important;
-}
+  .card-chip {
+    width: 45px;
+    height: 35px;
+    margin-bottom: 1.5rem;
+  }
 
-.sweet-html-container {
-  margin: 0 !important;
-  padding: 0 !important;
+  .card-value {
+    font-size: 0.9rem;
+  }
+
+  .card-logo {
+    font-size: 2.5rem;
+  }
+
+  .card-input {
+    font-size: 1rem !important;
+  }
 }

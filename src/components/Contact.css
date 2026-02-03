@@ -230,3 +230,34 @@
     font-size: 0.9rem;
   }
 }
+/* Estilos para el botón de envío cuando está deshabilitado */
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.form-group input:disabled,
+.form-group textarea:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+}
+
+/* Estilos personalizados para SweetAlert del contacto */
+.contact-alert-popup {
+  border-radius: 20px !important;
+  font-family: Arial, sans-serif !important;
+}
+
+.contact-confirm-btn {
+  padding: 0.8rem 2rem !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.contact-confirm-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4) !important;
+}

@@ -1,4 +1,4 @@
-// src/App.js - CÓDIGO COMPLETO CON SWEETALERT2
+// src/App.js - CÓDIGO COMPLETO CON CARRITO CORREGIDO
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -41,7 +41,13 @@ function App() {
     const cartKey = `cart_${userId}`;
     const savedCart = localStorage.getItem(cartKey);
     if (savedCart) {
-      setCart(JSON.parse(savedCart));
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        setCart(parsedCart);
+      } catch (error) {
+        console.error('Error al cargar carrito:', error);
+        setCart([]);
+      }
     } else {
       setCart([]);
     }
@@ -166,7 +172,6 @@ function App() {
             : item
         );
         
-        // SweetAlert de producto actualizado
         Swal.fire({
           icon: 'success',
           title: 'Cantidad actualizada',
@@ -180,7 +185,6 @@ function App() {
       } else {
         newCart = [...prevCart, { ...product, quantity }];
         
-        // SweetAlert de producto agregado
         Swal.fire({
           icon: 'success',
           title: '¡Producto agregado!',
@@ -236,32 +240,18 @@ function App() {
   };
 
   const clearCart = () => {
-    Swal.fire({
-      icon: 'warning',
-      title: '¿Vaciar carrito?',
-      text: 'Se eliminarán todos los productos del carrito',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, vaciar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#e74c3c',
-      cancelButtonColor: '#95a5a6'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setCart([]);
-        
-        // Limpiar carrito del usuario en localStorage
-        if (user) {
-          saveUserCart(user.id, []);
-        }
-        
-        Swal.fire({
-          icon: 'success',
-          title: 'Carrito vaciado',
-          timer: 1500,
-          showConfirmButton: false
-        });
-      }
-    });
+    console.log('🗑️ Limpiando carrito...'); // Debug
+    
+    // Limpiar estado
+    setCart([]);
+    
+    // Limpiar localStorage
+    if (user) {
+      const cartKey = `cart_${user.id}`;
+      localStorage.removeItem(cartKey);
+      localStorage.setItem(cartKey, JSON.stringify([]));
+      console.log('✅ Carrito limpiado del localStorage'); // Debug
+    }
   };
 
   const getCartTotal = () => {
@@ -312,6 +302,7 @@ function App() {
             getCartTotal={getCartTotal}
             clearCart={clearCart}
             onNavigate={navigateTo}
+            user={user}
           />
         );
       

@@ -1,18 +1,18 @@
-// src/components/Checkout.js - CÓDIGO COMPLETO CON SWEETALERT (SIN EMAIL)
+// src/components/Checkout.js - CÓDIGO COMPLETO CON LIMPIEZA DE CARRITO
 import React, { useState } from 'react';
 import api from '../services/api';
 import Swal from 'sweetalert2';
 import './Checkout.css';
 
-function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+function Checkout({ cart = [], getCartTotal, clearCart, onNavigate, user }) {
+  const userData = user || JSON.parse(localStorage.getItem('user') || '{}');
   
   const [formData, setFormData] = useState({
-    direccion: user?.direccion?.direccion || '',
-    ciudad: user?.direccion?.ciudad || '',
-    provincia: user?.direccion?.provincia || '',
-    telefono: user?.telefono || '',
-    email: user?.email || '',
+    direccion: userData?.direccion?.direccion || '',
+    ciudad: userData?.direccion?.ciudad || '',
+    provincia: userData?.direccion?.provincia || '',
+    telefono: userData?.telefono || '',
+    email: userData?.email || '',
     metodoPago: 'efectivo',
     // Datos de tarjeta
     numeroTarjeta: '',
@@ -34,6 +34,61 @@ function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
     });
   };
 
+  // Formatear número de tarjeta (agregar espacios cada 4 dígitos)
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || '';
+    const parts = [];
+
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+
+    if (parts.length) {
+      return parts.join(' ');
+    } else {
+      return value;
+    }
+  };
+
+  // Formatear fecha de expiración (agregar / automáticamente)
+  const formatExpiryDate = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    
+    if (v.length >= 2) {
+      return v.slice(0, 2) + '/' + v.slice(2, 4);
+    }
+    
+    return v;
+  };
+
+  // Formatear CVV (solo números, máximo 4)
+  const formatCVV = (value) => {
+    return value.replace(/[^0-9]/gi, '').slice(0, 4);
+  };
+
+  // Manejar cambios en campos de tarjeta con formato
+  const handleCardChange = (e) => {
+    const { name, value } = e.target;
+    let formattedValue = value;
+
+    if (name === 'numeroTarjeta') {
+      formattedValue = formatCardNumber(value);
+    } else if (name === 'fechaExpiracion') {
+      formattedValue = formatExpiryDate(value);
+    } else if (name === 'cvv') {
+      formattedValue = formatCVV(value);
+    } else if (name === 'nombreTarjeta') {
+      formattedValue = value.toUpperCase();
+    }
+
+    setFormData({
+      ...formData,
+      [name]: formattedValue
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -44,6 +99,40 @@ function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
           icon: 'warning',
           title: 'Datos Incompletos',
           text: 'Por favor completa todos los datos de la tarjeta',
+          confirmButtonColor: '#2e7d32'
+        });
+        return;
+      }
+
+      // Validar formato de tarjeta
+      const cardNumber = formData.numeroTarjeta.replace(/\s/g, '');
+      if (cardNumber.length < 13 || cardNumber.length > 19) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Número de tarjeta inválido',
+          text: 'El número de tarjeta debe tener entre 13 y 19 dígitos',
+          confirmButtonColor: '#2e7d32'
+        });
+        return;
+      }
+
+      // Validar formato de fecha
+      if (formData.fechaExpiracion.length !== 5) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Fecha inválida',
+          text: 'Formato de fecha: MM/AA',
+          confirmButtonColor: '#2e7d32'
+        });
+        return;
+      }
+
+      // Validar CVV
+      if (formData.cvv.length < 3) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'CVV inválido',
+          text: 'El CVV debe tener 3 o 4 dígitos',
           confirmButtonColor: '#2e7d32'
         });
         return;
@@ -88,7 +177,7 @@ function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
         metodoPago: formData.metodoPago,
         datosPago: formData.metodoPago === 'tarjeta' ? {
           tipo: 'tarjeta',
-          ultimos4Digitos: formData.numeroTarjeta.slice(-4)
+          ultimos4Digitos: formData.numeroTarjeta.replace(/\s/g, '').slice(-4)
         } : formData.metodoPago === 'transferencia' ? {
           tipo: 'transferencia',
           numeroComprobante: formData.numeroComprobante,
@@ -101,14 +190,20 @@ function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
       const response = await api.post('/orders', orderData);
 
       if (response.data.success) {
+        console.log('✅ Orden creada exitosamente'); // Debug
+        
+        // ✅ CRÍTICO: Limpiar carrito PRIMERO
         clearCart();
+        
+        // Pequeño delay para asegurar que se limpie
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        console.log('✅ Carrito limpiado'); // Debug
 
         // Mensaje según método de pago
         let mensajePago = '';
-        let iconoPago = '';
         
         if (formData.metodoPago === 'efectivo') {
-          iconoPago = '💵';
           mensajePago = `
             <div style="text-align: left; padding: 1rem; background: #fff3cd; border-radius: 10px; margin: 1rem 0;">
               <p style="margin: 0.5rem 0; font-size: 1rem; color: #856404;">
@@ -122,7 +217,6 @@ function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
             </div>
           `;
         } else if (formData.metodoPago === 'transferencia') {
-          iconoPago = '🏦';
           mensajePago = `
             <div style="text-align: left; padding: 1rem; background: #d1ecf1; border-radius: 10px; margin: 1rem 0;">
               <p style="margin: 0.5rem 0; font-size: 1rem; color: #0c5460;">
@@ -142,7 +236,6 @@ function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
             </div>
           `;
         } else if (formData.metodoPago === 'tarjeta') {
-          iconoPago = '💳';
           mensajePago = `
             <div style="text-align: left; padding: 1rem; background: #d4edda; border-radius: 10px; margin: 1rem 0;">
               <p style="margin: 0.5rem 0; font-size: 1rem; color: #155724;">
@@ -150,8 +243,8 @@ function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
               </p>
               <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: #155724;">
                 <li>Pago procesado exitosamente</li>
+                <li>Tarjeta terminada en: <strong>****${formData.numeroTarjeta.replace(/\s/g, '').slice(-4)}</strong></li>
                 <li>Monto debitado: <strong>$${(getCartTotal() + 3.00).toFixed(2)}</strong></li>
-                <li>Transacción completada</li>
               </ul>
             </div>
           `;
@@ -414,41 +507,66 @@ function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
 
                 {formData.metodoPago === 'tarjeta' && (
                   <div className="payment-info tarjeta-info">
-                    <p><strong>💳 Datos de la Tarjeta</strong></p>
+                    {/* Vista previa de la tarjeta */}
+                    <div className="credit-card-preview">
+                      <div className="card-chip"></div>
+                      <div className="card-number">
+                        {formData.numeroTarjeta || '•••• •••• •••• ••••'}
+                      </div>
+                      <div className="card-details">
+                        <div className="card-holder">
+                          <div className="card-label">TITULAR</div>
+                          <div className="card-value">{formData.nombreTarjeta || 'NOMBRE APELLIDO'}</div>
+                        </div>
+                        <div className="card-expiry">
+                          <div className="card-label">VÁLIDA HASTA</div>
+                          <div className="card-value">{formData.fechaExpiracion || 'MM/AA'}</div>
+                        </div>
+                      </div>
+                      <div className="card-logo">💳</div>
+                    </div>
+
+                    <p style={{marginTop: '1.5rem', marginBottom: '1rem'}}><strong>💳 Datos de la Tarjeta</strong></p>
+                    
                     <div className="form-group">
                       <label>Número de Tarjeta *</label>
                       <input
                         type="text"
                         name="numeroTarjeta"
                         value={formData.numeroTarjeta}
-                        onChange={handleChange}
+                        onChange={handleCardChange}
                         required={formData.metodoPago === 'tarjeta'}
                         placeholder="1234 5678 9012 3456"
                         maxLength="19"
+                        className="card-input"
                       />
                     </div>
+                    
                     <div className="form-group">
                       <label>Nombre en la Tarjeta *</label>
                       <input
                         type="text"
                         name="nombreTarjeta"
                         value={formData.nombreTarjeta}
-                        onChange={handleChange}
+                        onChange={handleCardChange}
                         required={formData.metodoPago === 'tarjeta'}
                         placeholder="JUAN PEREZ"
+                        className="card-input"
                       />
                     </div>
+                    
                     <div className="form-row">
                       <div className="form-group">
-                        <label>Fecha Exp. *</label>
+                        <label>Fecha de Expiración *</label>
                         <input
                           type="text"
                           name="fechaExpiracion"
                           value={formData.fechaExpiracion}
-                          onChange={handleChange}
+                          onChange={handleCardChange}
                           required={formData.metodoPago === 'tarjeta'}
                           placeholder="MM/AA"
                           maxLength="5"
+                          className="card-input"
                         />
                       </div>
                       <div className="form-group">
@@ -457,13 +575,15 @@ function Checkout({ cart = [], getCartTotal, clearCart, onNavigate }) {
                           type="text"
                           name="cvv"
                           value={formData.cvv}
-                          onChange={handleChange}
+                          onChange={handleCardChange}
                           required={formData.metodoPago === 'tarjeta'}
                           placeholder="123"
                           maxLength="4"
+                          className="card-input"
                         />
                       </div>
                     </div>
+                    
                     <p className="note">🔒 Tu información está segura y encriptada</p>
                   </div>
                 )}
